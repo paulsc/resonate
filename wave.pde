@@ -16,7 +16,6 @@ class Wave{
     xSpacing = 5;
     theta = random(0.0, 1.0);
     period = random(200.0, 500.0);
-    dx = (TWO_PI / period) * xSpacing;
     yValues = new float[w/xSpacing];
     colSpacing = 0;
   }
@@ -29,10 +28,12 @@ class Wave{
   
     // For every x value, calculate a y value with sine function
     particleX = theta;
+
+    dx = (TWO_PI / period) * xSpacing;
     
     // For each yvalue
     for (int i = 0; i < yValues.length; i++) {
-      yValues[i] = sin(particleX) * amplitude;// amplitude;
+      yValues[i] = sin(particleX) * (amplitude + time);// amplitude;
       particleX+=dx;
     }
   }

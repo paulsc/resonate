@@ -13,12 +13,20 @@ import org.java_websocket.WebSocketImpl;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
+import oscP5.*;
+import netP5.*;
+OscP5 oscP5;
+NetAddress myRemoteLocation;
+
 ArrayList<Wave> waveList = new ArrayList<Wave>();
 HashMap<String, Wave> waveContainer = new HashMap<String, Wave>();
-int quotient;
+int quotient, time;
 float columns, rows, w, h, x, y, modColumns, square, remainder;
 boolean empty;
 String boxNumberText;
+
+boolean pulse;
+
 
 void setup(){
   new ServerThread().start();
@@ -29,10 +37,18 @@ void setup(){
   }
   colorMode(HSB);
   frameRate(30);  
+  
+  // osc stuff
+  oscP5 = new OscP5(this, 8000);
+  myRemoteLocation = new NetAddress("192.168.2.31", 8000);
+  
 }
 
 void draw() {
-   background(0);
+  fill(0, 0, 0, 50);
+  rect(0, 0, width, height);
+  
+  pulse();
   
   // to create rows, find the square root (and the remainder)
   // ex: n = 10, square = 4 (rounded up), remainder = 1
@@ -77,11 +93,31 @@ void draw() {
   } 
 }
 
+int pulse() {
+  time = time + 1;
+  
+  if(pulse == true) {
+    time = 10;
+  }
+  return time;
+} 
+    
+void oscEvent(OscMessage theOscMessage) {
+  /* check if theOscMessage has the address pattern we are looking for. */
+
+  /* check if the typetag is the right one. */
+  /* parse theOscMessage and extract the values from the osc message arguments. */
+  int oscIn = theOscMessage.get(0).intValue();
+  pulse = boolean(oscIn);
+  //print(pulse);
+}
+
+
 public class ServerThread extends Thread{
   @Override
   public void run(){
     try{
-        WebSocketImpl.DEBUG = true;
+        //WebSocketImpl.DEBUG = true;
         int port = 8887; // 843 flash policy port
         try {
           port = Integer.parseInt( args[ 0 ] );
@@ -124,8 +160,11 @@ public class ChatServer extends WebSocketServer {
   @Override
   public void onMessage( WebSocket conn, String message ) {
     Wave w = waveContainer.get(conn.getRemoteSocketAddress().toString());
-    int value = Integer.parseInt(message);
-    w.amplitude = value;
+    String[] values = split(message, "|");
+    int value1 = Integer.parseInt(values[0]);
+    int value2 = Integer.parseInt(values[1]);
+    w.amplitude = value1;
+    w.period = value2;
   }
 
   @Override
