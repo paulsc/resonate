@@ -45,7 +45,7 @@ void setup(){
 }
 
 void draw() {
-  fill(0, 0, 0, 50);
+  fill(0, 0, 0, 80);
   rect(0, 0, width, height);
   
   pulse();
@@ -58,6 +58,10 @@ void draw() {
   quotient = ceil(numberOfWaves / square); 
   rows = square;
   columns = square;
+  
+  if(numberOfWaves == 2){
+    rows = 1;
+  }
   
   // divide the box width by the number of columns
   // and the box height by the number of rows,
@@ -109,7 +113,7 @@ void oscEvent(OscMessage theOscMessage) {
   /* parse theOscMessage and extract the values from the osc message arguments. */
   int oscIn = theOscMessage.get(0).intValue();
   pulse = boolean(oscIn);
-  //print(pulse);
+  print("|" + pulse);
 }
 
 
@@ -159,12 +163,13 @@ public class ChatServer extends WebSocketServer {
 
   @Override
   public void onMessage( WebSocket conn, String message ) {
+    if (message == null || message.length() == 0) return;
     Wave w = waveContainer.get(conn.getRemoteSocketAddress().toString());
     String[] values = split(message, "|");
     int value1 = Integer.parseInt(values[0]);
     int value2 = Integer.parseInt(values[1]);
     w.amplitude = value1;
-    w.period = value2;
+    w.period = value2 * 10;
   }
 
   @Override
