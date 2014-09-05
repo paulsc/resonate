@@ -166,8 +166,10 @@ public class ChatServer extends WebSocketServer {
     if (message == null || message.length() == 0) return;
     Wave w = waveContainer.get(conn.getRemoteSocketAddress().toString());
     String[] values = split(message, "|");
-    int value1 = Integer.parseInt(values[0]);
-    int value2 = Integer.parseInt(values[1]);
+    int waveColor = Integer.parseInt(values[0]);
+    int value1 = Integer.parseInt(values[1]);
+    int value2 = Integer.parseInt(values[2]);
+    w.waveColor = waveColor;
     w.amplitude = value1;
     w.period = value2 * 10;
   }
