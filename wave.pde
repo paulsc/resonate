@@ -1,6 +1,6 @@
 class Wave{
   int x, y, w, h, id, xSpacing, colSpacing, rowSpacing, waveColor, amplitude;
-  boolean empty;
+  boolean deleted;
   float[] yValues;
   // float[] amplitude = new float[numUsers];
   float theta, period, dx, particleX;
@@ -43,16 +43,14 @@ class Wave{
     
     // draw particles
     for (int i = 0; i < yValues.length; i++) {
-      ellipse((i * xSpacing) + colSpacing, (h/2) + yValues[i] + rowSpacing, 8, 8);
+      ellipse((i * xSpacing) + x, (h/2) + yValues[i] + y, 8, 8);
     }
   }
   
-  void setPos(float x, float y, float w, float h, float colSpacing, float rowSpacing) {
+  void setPos(float x, float y, float w, float h) {
     this.x = floor(x);
     this.y = floor(y);
     this.w = floor(w);
     this.h = floor(h);
-    this.colSpacing = floor(colSpacing);
-    this.rowSpacing = floor(rowSpacing);
   }
 }
