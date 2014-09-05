@@ -77,24 +77,23 @@ void draw() {
   } 
 }
 
-//create a separate thread for the server not to freeze/interfere with Processing's default animation thread
 public class ServerThread extends Thread{
   @Override
   public void run(){
     try{
-          WebSocketImpl.DEBUG = true;
-          int port = 8887; // 843 flash policy port
-          try {
-            port = Integer.parseInt( args[ 0 ] );
-          } catch ( Exception ex ) {
-          }
-          ChatServer s = new ChatServer( port );
-          s.start();
-          System.out.println( "ChatServer started on port: " + s.getPort() );
+        WebSocketImpl.DEBUG = true;
+        int port = 8887; // 843 flash policy port
+        try {
+          port = Integer.parseInt( args[ 0 ] );
+        } catch ( Exception ex ) {
+        }
+        ChatServer s = new ChatServer( port );
+        s.start();
+        System.out.println( "ChatServer started on port: " + s.getPort() );
 
-        }catch(IOException e){
-          e.printStackTrace();
-        }  
+      }catch(IOException e){
+        e.printStackTrace();
+      }  
   }
 }
 public class ChatServer extends WebSocketServer {
