@@ -1,0 +1,121 @@
+<html>
+<head>
+<title> Tracker </title>
+<!--<script src="jquery.min.js"></script>-->
+<script type="text/javascript">
+
+var liveCoords = [];
+
+var movementSeries = [];
+
+function tilt(coords) {
+  liveCoords = coords;
+
+  /*
+  document.getElementById('output-x').innerHTML = Math.round(coords[0]);
+  document.getElementById('output-y').innerHTML = Math.round(coords[1]);
+  document.getElementById('output-z').innerHTML = Math.round(coords[2]);
+	*/
+}
+
+var oldCoords = [];
+var currentCoords = [];
+var socket;
+
+function getDiff(oldAngle, newAngle) {
+  var invertOld = 360 - oldAngle;
+  oldAngle = Math.min(oldAngle, invertOld);
+
+  var invertNew = 360 - newAngle;
+  newAngle = Math.min(invertNew, newAngle);
+
+  return Math.abs(oldAngle, newAngle); 
+}
+
+function process() {
+  oldCoords = currentCoords.slice();
+  currentCoords = liveCoords.slice(); 
+
+  var delta1 = getDiff(currentCoords[0] - oldCoords[0]);
+  var delta2 = getDiff(currentCoords[1] - oldCoords[1]);
+  var delta3 = getDiff(currentCoords[2] - oldCoords[2]);
+
+  var delta = Math.round(delta1 + delta2 + delta3);
+  if (delta > 150) delta = 150;
+
+  movementSeries.push(delta);
+
+  if (movementSeries > 10) movementSeries.shift();
+
+  if (movementSeries.length >= 2) {
+    last = movementSeries[movementSeries.length - 1];
+    before = movementSeries[movementSeries.length - 2];
+    delta = last + before / 2;
+  }
+
+  document.getElementById("movement").innerHTML = Math.round(delta);
+
+  value = currentCoords[1]; 
+  if (value > 180) value = 360 - value;
+
+  //value = Math.round(currentCoords[0] / 360 * 150);
+
+  if (socket && socket.readyState == 1) {
+    socket.send(Math.round(value));
+  } 
+}
+
+function connect() {
+  if (socket && socket.readyState != 1) {
+    socket = new WebSocket('ws://192.168.0.1:8887/');
+  }
+}
+
+function socketOpened() {
+  document.getElementById("log").innerHTML = 'connected.';
+}
+
+function socketClosed() {
+  document.getElementById("log").innerHTML = 'disconnected.';  
+}
+
+function onload() {
+  if (window.DeviceOrientationEvent) {
+      window.addEventListener("deviceorientation", function () {
+          tilt([event.alpha, event.beta, event.gamma]);
+      }, true);
+  } else if (window.DeviceMotionEvent) {
+      window.addEventListener('devicemotion', function () {
+          tilt([0, event.acceleration.x * 2, event.acceleration.y * 2]);
+      }, true);
+  } else {
+      window.addEventListener("MozOrientation", function () {
+          tilt([0, orientation.x * 50, orientation.y * 50]);
+      }, true);
+  }
+
+  setInterval(process, 10);
+  //setInterval(connect, 1000);
+
+  socket = new WebSocket('ws://192.168.2.25:8887/');
+  socket.onopen = socketOpened;
+  socket.onclose = socketClosed;
+
+};
+
+</script>
+
+</head>
+
+<body onload="onload()">
+
+<div id="log"></div>
+<div id="output-x"></div>
+<div id="output-y"></div>
+<div id="output-z"></div>
+<div id="movement"></div>
+
+
+</body>
+</html>
+
