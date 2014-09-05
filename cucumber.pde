@@ -124,6 +124,9 @@ public class ChatServer extends WebSocketServer {
 
   @Override
   public void onMessage( WebSocket conn, String message ) {
+    Wave w = waveContainer.get(conn.getRemoteSocketAddress().toString());
+    int value = Integer.parseInt(message);
+    w.amplitude = value;
   }
 
   @Override
