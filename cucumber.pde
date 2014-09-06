@@ -167,18 +167,19 @@ public class ChatServer extends WebSocketServer {
     String[] values = split(message, "|");
     int waveColor = Integer.parseInt(values[0]);
     int value1 = Integer.parseInt(values[1]); // -90 (phone pointing down) to 90 (phone pointing up) 
-    int value2 = Integer.parseInt(values[2]); // -180 to 180
+    //int value2 = Integer.parseInt(values[2]); // -180 to 180
     
     w.waveColor = waveColor;
-    w.amplitude = 90 + value1; // good range for amplitude is 0-400
+    w.amplitude = 90 + (value1 * 4); // good range for amplitude is 0-400
 
     // good range for period is 1-1800. Interesting stuff happens below 100. 
+    /*
     if (value2 == 0) value2 = 1;
     value2 = Math.abs(value2);
-    
     if (value2 < 10) value2 = 10;
     w.period = value2 * 10;
-    //w.period = 500;
+    */
+    w.period = 500;
   }
 
   @Override

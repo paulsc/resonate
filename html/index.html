@@ -84,6 +84,23 @@ function process() {
   } 
 }
 
+var aggregatedMovement = 0;
+var sampleCount = 0;
+function processAccell() {
+  if (sampleCount == 0) return;
+  var averagedAccel = Math.round(aggregatedMovement / sampleCount);
+
+  document.getElementById("accel").innerHTML = averagedAccel;
+  document.getElementById("sample-count").innerHTML = sampleCount;
+  
+  aggregatedMovement = 0;
+  sampleCount = 0;
+
+  if (socket && socket.readyState == 1) {
+    socket.send(color255 + "|" + averagedAccel);
+  }  
+}
+
 function connect() {
   if (socket && socket.readyState != 1) {
     socket = new WebSocket('ws://192.168.0.1:8887/');
@@ -104,6 +121,21 @@ function onload() {
 
   document.body.style.backgroundColor = "rgb(" + bg.r + ", " + bg.g + ", " + bg.b + ")";
 
+  window.addEventListener('devicemotion', function(event) {
+    aggregatedMovement += event.acceleration.x;
+    aggregatedMovement += event.acceleration.y;
+    aggregatedMovement += event.acceleration.z;
+    sampleCount = sampleCount + 1;
+
+    document.getElementById("accel-x").innerHTML = event.interval; 
+
+    /*
+    document.getElementById("accel-x").innerHTML = Math.round(event.acceleration.x); 
+    document.getElementById("accel-y").innerHTML = Math.round(event.acceleration.y);
+    document.getElementById("accel-z").innerHTML = Math.round(event.acceleration.z);
+    */
+  });
+
   if (window.DeviceOrientationEvent) {
       window.addEventListener("deviceorientation", function () {
           tilt([event.alpha, event.beta, event.gamma]);
@@ -118,7 +150,7 @@ function onload() {
       }, true);
   }
 
-  setInterval(process, 10);
+  setInterval(processAccell, 20);
   //setInterval(connect, 1000);
 
   socket = new WebSocket('ws://192.168.2.25:8887/');
@@ -134,8 +166,10 @@ function onload() {
 <body onload="onload()">
 
 <div id="log"></div>
-<div id="value1"></div>
-<div id="value2"></div>
+<div id="accel-x"></div>
+<div id="sample-count"></div>
+<div id="accel"></div>
+
 
 </body>
 </html>
