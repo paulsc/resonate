@@ -76,8 +76,15 @@ void sumPieTotals() {
   
 }
 
+boolean drawPies = true;
+void keyPressed() {
+  drawPies = !drawPies;
+}
+
 void draw() {
-   drawPies();
+ pulse();
+ if (drawPies) drawPies();
+ else drawWaves();
 }
 
 void drawPies() {
@@ -95,6 +102,7 @@ void drawPies() {
     // map percent to degrees
     float newVal = map(slice.percentVal, 0, 1, 0, 360);
     float newRad = slice.radius;
+    
     
     // set angle
     float endAngle = startAngle + radians(newVal);
@@ -134,7 +142,6 @@ void drawWaves() {
 //  fill(255);
 //  textSize(32);
 //  text("wifi: plug and play - password: ZKx6Vk77 - url: http://paulsc.net", 110, 30);  
-  pulse();
   
   // to create rows, find the square root (and the remainder)
   // ex: n = 10, square = 4 (rounded up), remainder = 1
