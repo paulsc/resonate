@@ -25,6 +25,7 @@ int quotient, time;
 float columns, rows, w, h, x, y, modColumns, square, remainder;
 boolean empty;
 String boxNumberText;
+ArrayList<Ripple> ripples;
 
 boolean pulse = false;
 boolean pulseStarted = false;
@@ -56,6 +57,7 @@ void setup(){
   myRemoteLocation = new NetAddress("192.168.2.31", 8000);
  
   StringPhysics.initPhysics(this);
+  ripples = new ArrayList<Ripple>();
 }
 
 long m = millis();
@@ -129,11 +131,29 @@ void drawPies() {
   noStroke();
   rect(0, 0, width, height);
 
+  if(time == 10){
+    Ripple newRipple = new Ripple(100);
+    ripples.add(newRipple); 
+  }
+
+  if(ripples.size() > 0){
+    for(int i = 0; i < ripples.size() || i < 1; i++){
+      if(ripples.get(i).radius < width) {
+        ripples.get(i).update();
+        fill(0, 0, 0, 80);
+        noStroke();
+        rect(0, 0, width, height);
+      } else {
+        ripples.remove(i);
+      }
+    }
+  }
+
   sumPieTotals();
   
   // init start angle
   float startAngle = 0.0;
-    
+
   // iterate through segments
   for (int i = 0; i < slices.size(); i++) {
     Slice slice = slices.get(i);
@@ -170,6 +190,10 @@ void drawPies() {
     // set start angle to end angle
     startAngle = endAngle;
   }
+  
+  fill(0, 0, 0, 80);
+  noStroke();
+  rect(0, 0, width, height);
 }
 
 void drawWaves() {
