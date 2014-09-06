@@ -29,8 +29,23 @@ String boxNumberText;
 boolean pulse = false;
 boolean pulseStarted = false;
 
+// START PIE STUFF
+CopyOnWriteArrayList<Slice> slices = new CopyOnWriteArrayList<Slice>();
+HashMap<String, Slice> sliceContainer = new HashMap<String, Slice>();
+PFont helvetica;
+
+// misc
+float chartRadius = 300;
+float minRad = MAX_FLOAT;
+float maxRad = MIN_FLOAT;
+// END PIE STUFF
+
+
 void setup(){
   new ServerThread().start();
+  
+//  helvetica = createFont("Helvetica-Bold", 13);
+//  textFont(helvetica);
   
   size(1280, 800);
   if (frame != null) {
@@ -43,17 +58,82 @@ void setup(){
   oscP5 = new OscP5(this, 8000);
   myRemoteLocation = new NetAddress("192.168.2.31", 8000);
  
+ //generateChart();
+}
+
+void sumPieTotals() {
+   // add up all values for totals
+  float totalVal = 0.0;
+  for (int i = 0; i < slices.size(); i++) {
+    totalVal += slices.get(i).value;
+  }
+
+  // translate values into percent
+  for (int i = 0; i < slices.size(); i++) {
+    Slice s = slices.get(i);
+    s.percentVal = s.value / totalVal;
+  } 
+  
 }
 
 void draw() {
+   drawPies();
+}
+
+void drawPies() {
+  background(255);
+
+  sumPieTotals();
+  
+  // init start angle
+  float startAngle = 0.0;
+  
+  // iterate through segments
+  for (int i = 0; i < slices.size(); i++) {
+    Slice slice = slices.get(i);
+    
+    // map percent to degrees
+    float newVal = map(slice.percentVal, 0, 1, 0, 360);
+    float newRad = slice.radius;
+    
+    // set angle
+    float endAngle = startAngle + radians(newVal);
+
+    // get mouse position relative to sketch center
+    float translateX = map(mouseX, 0, width, -width/2, width/2);
+    float translateY = map(mouseY, 0, height, -height/2, height/2);
+    
+    // first, get radius and angle by converting cartesian mouse coordinates to polar coordinates
+    float mouseRad = sqrt(pow(translateY, 2) + pow(translateX, 2));
+    float mouseAngle = atan2(translateY, translateX);
+    
+    // if is necessary to translate negative into positive values to get the full circle
+    if (mouseAngle < 0) {
+      mouseAngle = PI + (PI + mouseAngle);
+    }
+    
+    // set fill
+    noStroke();
+    
+    color hsvColor = color(slice.sliceColor, 255, 255);
+    fill(hsvColor);
+    
+    // draw arc
+    arc(width/2, height/2, newRad*2, newRad*2, startAngle, endAngle);
+          
+    // set start angle to end angle
+    startAngle = endAngle;
+  }
+}
+
+void drawWaves() {
   fill(0, 0, 0, 80);
   rect(0, 0, width, height);
 
-/*
-  fill(255);
-  textSize(32);
-  text("wifi: plug and play - password: ZKx6Vk77 - url: http://paulsc.net", 110, 30);  
-*/  
+
+//  fill(255);
+//  textSize(32);
+//  text("wifi: plug and play - password: ZKx6Vk77 - url: http://paulsc.net", 110, 30);  
   pulse();
   
   // to create rows, find the square root (and the remainder)
@@ -148,9 +228,14 @@ public class ChatServer extends WebSocketServer {
   @Override
   public void onOpen( WebSocket conn, ClientHandshake handshake ) {
     System.out.println( conn.getRemoteSocketAddress().getAddress().getHostAddress() + " entered the room!" );
+    
     Wave w = new Wave(waveList.size());
     waveContainer.put(conn.getRemoteSocketAddress().toString(), w);
     waveList.add(w);
+    
+    Slice slice = new Slice((int)random(100), 100);    
+    slices.add(slice);
+    sliceContainer.put(conn.getRemoteSocketAddress().toString(), slice);
   }
 
   @Override
@@ -158,11 +243,15 @@ public class ChatServer extends WebSocketServer {
     System.out.println( conn + " has left the room!" );
     Wave w = waveContainer.get(conn.getRemoteSocketAddress().toString());
     waveList.remove(w);
+    
+    Slice s = sliceContainer.get(conn.getRemoteSocketAddress().toString());
+    slices.remove(s);
   }
 
   @Override
   public void onMessage( WebSocket conn, String message ) {
     if (message == null || message.length() == 0) return;
+    
     Wave w = waveContainer.get(conn.getRemoteSocketAddress().toString());
     String[] values = split(message, "|");
     int waveColor = Integer.parseInt(values[0]);
@@ -171,15 +260,13 @@ public class ChatServer extends WebSocketServer {
     
     w.waveColor = waveColor;
     w.amplitude = 90 + (value1 * 4); // good range for amplitude is 0-400
-
-    // good range for period is 1-1800. Interesting stuff happens below 100. 
-    /*
-    if (value2 == 0) value2 = 1;
-    value2 = Math.abs(value2);
-    if (value2 < 10) value2 = 10;
-    w.period = value2 * 10;
-    */
     w.period = 500;
+    
+    Slice slice = sliceContainer.get(conn.getRemoteSocketAddress().toString());
+    value1 = value1 * 12;
+    if (value1 < 50) value1 = 50;
+    slice.radius = value1;
+    slice.sliceColor = waveColor;
   }
 
   @Override
