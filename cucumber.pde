@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
@@ -18,7 +19,7 @@ import netP5.*;
 OscP5 oscP5;
 NetAddress myRemoteLocation;
 
-ArrayList<Wave> waveList = new ArrayList<Wave>();
+CopyOnWriteArrayList<Wave> waveList = new CopyOnWriteArrayList<Wave>();
 HashMap<String, Wave> waveContainer = new HashMap<String, Wave>();
 int quotient, time;
 float columns, rows, w, h, x, y, modColumns, square, remainder;
@@ -87,7 +88,6 @@ void draw() {
        // create a new box
        if (it.hasNext()) {
          Wave thisWave = (Wave) it.next();
-         if (thisWave.deleted) it.remove();
          
          thisWave.setPos(x, y, w, h);
          thisWave.calcWave();         
@@ -152,7 +152,7 @@ public class ChatServer extends WebSocketServer {
   public void onClose( WebSocket conn, int code, String reason, boolean remote ) {
     System.out.println( conn + " has left the room!" );
     Wave w = waveContainer.get(conn.getRemoteSocketAddress().toString());
-    w.deleted = true;
+    waveList.remove(w);
   }
 
   @Override

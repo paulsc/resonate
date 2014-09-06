@@ -1,6 +1,6 @@
 <html>
 <head>
-<title> Tracker </title>
+<title> Simulator </title>
 
 <style>
 body { 
@@ -17,29 +17,8 @@ var movementSeries = [];
 var color = Math.random();
 var color255 = Math.round(color * 255);
 
-function tilt(coords) {
-  liveCoords = coords;
-
-  /*
-  document.getElementById('output-x').innerHTML = Math.round(coords[0]);
-  document.getElementById('output-y').innerHTML = Math.round(coords[1]);
-  document.getElementById('output-z').innerHTML = Math.round(coords[2]);
-	*/
-}
-
-var oldCoords = [];
 var currentCoords = [];
 var socket;
-
-function getDiff(oldAngle, newAngle) {
-  var invertOld = 360 - oldAngle;
-  oldAngle = Math.min(oldAngle, invertOld);
-
-  var invertNew = 360 - newAngle;
-  newAngle = Math.min(invertNew, newAngle);
-
-  return Math.abs(oldAngle, newAngle); 
-}
 
 function HSVtoRGB(h, s, v) {
     var r, g, b, i, f, p, q, t;
@@ -70,8 +49,8 @@ function process() {
   //oldCoords = currentCoords.slice();
   currentCoords = liveCoords.slice(); 
 
-  value1 = currentCoords[1]; 
-  value2 = currentCoords[2]; 
+  value1 = 90 - Math.abs(Math.random(180));
+  value2 = 180 - Math.abs(Math.random(360));
 
   value1 = Math.round(value1);
   value2 = Math.round(value2);
@@ -104,27 +83,11 @@ function onload() {
 
   document.body.style.backgroundColor = "rgb(" + bg.r + ", " + bg.g + ", " + bg.b + ")";
 
-  if (window.DeviceOrientationEvent) {
-      window.addEventListener("deviceorientation", function () {
-          tilt([event.alpha, event.beta, event.gamma]);
-      }, true);
-  } else if (window.DeviceMotionEvent) {
-      window.addEventListener('devicemotion', function () {
-          tilt([0, event.acceleration.x * 2, event.acceleration.y * 2]);
-      }, true);
-  } else {
-      window.addEventListener("MozOrientation", function () {
-          tilt([0, orientation.x * 50, orientation.y * 50]);
-      }, true);
-  }
-
   setInterval(process, 10);
-  //setInterval(connect, 1000);
 
   socket = new WebSocket('ws://192.168.2.25:8887/');
   socket.onopen = socketOpened;
   socket.onclose = socketClosed;
-
 };
 
 </script>
