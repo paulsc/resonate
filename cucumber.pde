@@ -25,8 +25,8 @@ float columns, rows, w, h, x, y, modColumns, square, remainder;
 boolean empty;
 String boxNumberText;
 
-boolean pulse;
-
+boolean pulse = false;
+boolean pulseStarted = false;
 
 void setup(){
   new ServerThread().start();
@@ -97,20 +97,14 @@ void draw() {
   } 
 }
 
-int pulse() {
-  time = time + 1;
-  
-  if(pulse == true) {
-    time = 10;
-  }
-  return time;
+void pulse() {
+  if (!pulseStarted) return;
+  if (time < 100) time = time + 1; // keep growing up to a max 
+  if (pulse) time = 10; // reset
 } 
     
 void oscEvent(OscMessage theOscMessage) {
-  /* check if theOscMessage has the address pattern we are looking for. */
-
-  /* check if the typetag is the right one. */
-  /* parse theOscMessage and extract the values from the osc message arguments. */
+  pulseStarted = true;
   int oscIn = theOscMessage.get(0).intValue();
   pulse = boolean(oscIn);
   print("|" + pulse);
@@ -167,11 +161,17 @@ public class ChatServer extends WebSocketServer {
     Wave w = waveContainer.get(conn.getRemoteSocketAddress().toString());
     String[] values = split(message, "|");
     int waveColor = Integer.parseInt(values[0]);
-    int value1 = Integer.parseInt(values[1]);
-    int value2 = Integer.parseInt(values[2]);
+    int value1 = Integer.parseInt(values[1]); // -90 (phone pointing down) to 90 (phone pointing up) 
+    int value2 = Integer.parseInt(values[2]); // -180 to 180
+    
     w.waveColor = waveColor;
-    w.amplitude = value1;
+    w.amplitude = 90 + value1; // good range for amplitude is 0-400
+
+    // good range for period is 1-1800. Interesting stuff happens below 100. 
+    if (value2 == 0) value2 = 1;
+    value2 = Math.abs(value2);
     w.period = value2 * 10;
+    //w.period = 500;
   }
 
   @Override
