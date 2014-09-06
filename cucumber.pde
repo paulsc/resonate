@@ -43,10 +43,7 @@ float maxRad = MIN_FLOAT;
 
 void setup(){
   new ServerThread().start();
-  
-//  helvetica = createFont("Helvetica-Bold", 13);
-//  textFont(helvetica);
-  
+    
   size(1280, 800);
   if (frame != null) {
     frame.setResizable(true);
@@ -85,6 +82,16 @@ void draw() {
  pulse();
  if (drawPies) drawPies();
  else drawWaves();
+ 
+//  fill(255);
+//  textSize(32);
+//  text("wifi: plug and play - password: ZKx6Vk77 - url: http://paulsc.net", 110, 30);
+
+  if (slices.size() == 0) {
+    fill(255);
+    textSize(62);
+    text("RESONATE", 450, 400);
+  }
 }
 
 void drawPies() {
@@ -95,6 +102,11 @@ void drawPies() {
   // init start angle
   float startAngle = 0.0;
   
+  if (slices.size() == 0) {
+    
+  }
+  
+  
   // iterate through segments
   for (int i = 0; i < slices.size(); i++) {
     Slice slice = slices.get(i);
@@ -102,7 +114,6 @@ void drawPies() {
     // map percent to degrees
     float newVal = map(slice.percentVal, 0, 1, 0, 360);
     float newRad = slice.radius + time*2;
-    
     
     // set angle
     float endAngle = startAngle + radians(newVal);
@@ -137,11 +148,6 @@ void drawPies() {
 void drawWaves() {
   fill(0, 0, 0, 80);
   rect(0, 0, width, height);
-
-
-//  fill(255);
-//  textSize(32);
-//  text("wifi: plug and play - password: ZKx6Vk77 - url: http://paulsc.net", 110, 30);  
   
   // to create rows, find the square root (and the remainder)
   // ex: n = 10, square = 4 (rounded up), remainder = 1
