@@ -88,7 +88,7 @@ void draw() {
 }
 
 void drawPies() {
-  background(255);
+  background(0);
 
   sumPieTotals();
   
@@ -101,7 +101,7 @@ void drawPies() {
     
     // map percent to degrees
     float newVal = map(slice.percentVal, 0, 1, 0, 360);
-    float newRad = slice.radius;
+    float newRad = slice.radius + time*2;
     
     
     // set angle
