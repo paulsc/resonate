@@ -42,13 +42,18 @@ void setup(){
   // osc stuff
   oscP5 = new OscP5(this, 8000);
   myRemoteLocation = new NetAddress("192.168.2.31", 8000);
-  
+ 
 }
 
 void draw() {
   fill(0, 0, 0, 80);
   rect(0, 0, width, height);
-  
+
+/*
+  fill(255);
+  textSize(32);
+  text("wifi: plug and play - password: ZKx6Vk77 - url: http://paulsc.net", 110, 30);  
+*/  
   pulse();
   
   // to create rows, find the square root (and the remainder)
@@ -170,6 +175,8 @@ public class ChatServer extends WebSocketServer {
     // good range for period is 1-1800. Interesting stuff happens below 100. 
     if (value2 == 0) value2 = 1;
     value2 = Math.abs(value2);
+    
+    if (value2 < 10) value2 = 10;
     w.period = value2 * 10;
     //w.period = 500;
   }
