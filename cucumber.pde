@@ -123,9 +123,9 @@ void drawPies() {
   // init start angle
   float startAngle = 0.0;
   
-  if (slices.size() == 0) {
-    
-  }
+//  if (slices.size() == 0) {
+//    
+//  }
   
   
   // iterate through segments
@@ -164,6 +164,10 @@ void drawPies() {
     // set start angle to end angle
     startAngle = endAngle;
   }
+  
+  fill(0, 0, 0, 80);
+  noStroke();
+  rect(0, 0, width, height);
 }
 
 void drawWaves() {
