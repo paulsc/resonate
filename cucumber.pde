@@ -264,7 +264,7 @@ public class ChatServer extends WebSocketServer {
     
     Slice slice = sliceContainer.get(conn.getRemoteSocketAddress().toString());
     value1 = value1 * 12;
-    if (value1 < 50) value1 = 50;
+    if (value1 < 100) value1 = 100;
     slice.radius = value1;
     slice.sliceColor = waveColor;
   }
