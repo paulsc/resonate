@@ -25,6 +25,7 @@ int quotient, time;
 float columns, rows, w, h, x, y, modColumns, square, remainder;
 boolean empty;
 String boxNumberText;
+ArrayList<Ripple> ripples;
 
 boolean pulse = false;
 boolean pulseStarted = false;
@@ -54,6 +55,8 @@ void setup(){
   // osc stuff
   oscP5 = new OscP5(this, 8000);
   myRemoteLocation = new NetAddress("192.168.2.31", 8000);
+ 
+  ripples = new ArrayList<Ripple>();
  
  //generateChart();
 }
@@ -96,6 +99,24 @@ void draw() {
 
 void drawPies() {
   background(0);
+
+  if(time == 10){
+    Ripple newRipple = new Ripple(100);
+    ripples.add(newRipple); 
+  }
+
+  if(ripples.size() > 0){
+    for(int i = 0; i < ripples.size() || i < 1; i++){
+      if(ripples.get(i).radius < width) {
+        ripples.get(i).update();
+        fill(0, 0, 0, 80);
+        noStroke();
+        rect(0, 0, width, height);
+      } else {
+        ripples.remove(i);
+      }
+    }
+  }
 
   sumPieTotals();
   
