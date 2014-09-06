@@ -55,8 +55,45 @@ void setup(){
   oscP5 = new OscP5(this, 8000);
   myRemoteLocation = new NetAddress("192.168.2.31", 8000);
  
- //generateChart();
+  StringPhysics.initPhysics(this);
 }
+
+long m = millis();
+
+void draw() {
+
+  if (millis() - m > 20) {
+    m = millis();
+    
+    Iterator it = slices.iterator();
+    int totalRadius = 0;
+    while (it.hasNext()) {
+      Slice slice = (Slice)it.next();
+      totalRadius += slice.originalValue;
+    }
+    System.out.println(totalRadius);
+    //StringPhysics.pullHeight = totalRadius;
+    StringPhysics.pullHeight = 400 + (totalRadius * 2);
+
+  }
+  
+  pulse();
+ 
+ if (drawWhat == 0) drawWaves();
+ else if (drawWhat == 1) drawPies();
+ else if (drawWhat == 2) drawString();
+ 
+//  fill(255);
+//  textSize(32);
+//  text("wifi: plug and play - password: ZKx6Vk77 - url: http://paulsc.net", 110, 30);
+
+  if (slices.size() == 0) {
+//    fill(255);
+//    textSize(62);
+//    text("RESONATE", 480, 400);
+  }
+}
+
 
 void sumPieTotals() {
    // add up all values for totals
@@ -73,40 +110,30 @@ void sumPieTotals() {
   
 }
 
-boolean drawPies = true;
+
+int drawWhat = 0;
 void keyPressed() {
-  drawPies = !drawPies;
+  drawWhat++;
+  if (drawWhat == 3) drawWhat = 0;
 }
 
-void draw() {
- pulse();
- if (drawPies) drawPies();
- else drawWaves();
- 
-//  fill(255);
-//  textSize(32);
-//  text("wifi: plug and play - password: ZKx6Vk77 - url: http://paulsc.net", 110, 30);
-
-  if (slices.size() == 0) {
-    fill(255);
-    textSize(62);
-    text("RESONATE", 450, 400);
-  }
+void drawString() {
+  fill(0, 0, 0, 80);
+  noStroke();
+  rect(0, 0, width, height);
+  StringPhysics.draw(this);  
 }
 
 void drawPies() {
-  background(0);
+  fill(0, 0, 0, 80);
+  noStroke();
+  rect(0, 0, width, height);
 
   sumPieTotals();
   
   // init start angle
   float startAngle = 0.0;
-  
-  if (slices.size() == 0) {
     
-  }
-  
-  
   // iterate through segments
   for (int i = 0; i < slices.size(); i++) {
     Slice slice = slices.get(i);
@@ -276,7 +303,8 @@ public class ChatServer extends WebSocketServer {
     w.period = 500;
     
     Slice slice = sliceContainer.get(conn.getRemoteSocketAddress().toString());
-    value1 = value1 * 12;
+    slice.originalValue = value1;
+    value1 = value1 * 8;
     if (value1 < 100) value1 = 100;
     slice.radius = value1;
     slice.sliceColor = waveColor;

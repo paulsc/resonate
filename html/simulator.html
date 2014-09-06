@@ -63,12 +63,6 @@ function process() {
   } 
 }
 
-function connect() {
-  if (socket && socket.readyState != 1) {
-    socket = new WebSocket('ws://192.168.0.1:8887/');
-  }
-}
-
 function socketOpened() {
   document.getElementById("log").innerHTML = 'connected.';
 }

@@ -6,6 +6,7 @@ class Slice {
     this.sliceColor = (int) random(255);
   }
   
+  float originalValue;
   float value;
   float radius;
   float percentVal;
