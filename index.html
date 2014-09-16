@@ -80,7 +80,8 @@
             aggregatedMovement += Math.abs(event.acceleration.z);
             sampleCount = sampleCount + 1;
     
-            document.getElementById("accel-x").innerHTML = "intvl: " + event.interval; 
+            document.getElementById("accel-x").innerHTML = event.acceleration.x; 
+            //document.getElementById("accel-x").innerHTML = "intvl: " + event.interval; 
     
             /*
             document.getElementById("accel-x").innerHTML = Math.round(event.acceleration.x); 
@@ -103,7 +104,7 @@
             }, true);
         }
 
-        setInterval(processAccell, 20);
+        //setInterval(processAccell, 20);
 
     //  socket = new WebSocket('ws://192.168.178.22:8887/');
     //  socket.onopen = socketOpened;
