@@ -75,13 +75,14 @@
         document.body.style.backgroundColor = "rgb(" + bg.r + ", " + bg.g + ", " + bg.b + ")";
   
         window.addEventListener('devicemotion', function(event) {
+            aggregatedMovement = 0;
             aggregatedMovement += Math.abs(event.acceleration.x);
             aggregatedMovement += Math.abs(event.acceleration.y);
             aggregatedMovement += Math.abs(event.acceleration.z);
             sampleCount = sampleCount + 1;
     
             //document.getElementById("accel-x").innerHTML = event.acceleration.x; 
-            document.getElementById("accel-x").innerHTML = Math.abs(aggregatedMovement); 
+            document.getElementById("accel-x").innerHTML = Math.round(aggregatedMovement); 
     
             /*
             document.getElementById("accel-x").innerHTML = Math.round(event.acceleration.x); 
