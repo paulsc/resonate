@@ -1,0 +1,176 @@
+<html>
+<head>
+<title> Tracker </title>
+
+<style>
+body { 
+  font-family: "Arial"; 
+  font-size: 100px;
+  font-weight: bold;
+}
+</style>
+
+<script type="text/javascript">
+
+var liveCoords = [];
+var movementSeries = [];
+var color = Math.random();
+var color255 = Math.round(color * 255);
+
+function tilt(coords) {
+  liveCoords = coords;
+
+  /*
+  document.getElementById('output-x').innerHTML = Math.round(coords[0]);
+  document.getElementById('output-y').innerHTML = Math.round(coords[1]);
+  document.getElementById('output-z').innerHTML = Math.round(coords[2]);
+	*/
+}
+
+var oldCoords = [];
+var currentCoords = [];
+var socket;
+
+function getDiff(oldAngle, newAngle) {
+  var invertOld = 360 - oldAngle;
+  oldAngle = Math.min(oldAngle, invertOld);
+
+  var invertNew = 360 - newAngle;
+  newAngle = Math.min(invertNew, newAngle);
+
+  return Math.abs(oldAngle, newAngle); 
+}
+
+function HSVtoRGB(h, s, v) {
+    var r, g, b, i, f, p, q, t;
+    if (h && s === undefined && v === undefined) {
+        s = h.s, v = h.v, h = h.h;
+    }
+    i = Math.floor(h * 6);
+    f = h * 6 - i;
+    p = v * (1 - s);
+    q = v * (1 - f * s);
+    t = v * (1 - (1 - f) * s);
+    switch (i % 6) {
+        case 0: r = v, g = t, b = p; break;
+        case 1: r = q, g = v, b = p; break;
+        case 2: r = p, g = v, b = t; break;
+        case 3: r = p, g = q, b = v; break;
+        case 4: r = t, g = p, b = v; break;
+        case 5: r = v, g = p, b = q; break;
+    }
+    return {
+        r: Math.floor(r * 255),
+        g: Math.floor(g * 255),
+        b: Math.floor(b * 255)
+    };
+}
+
+function process() {
+  //oldCoords = currentCoords.slice();
+  currentCoords = liveCoords.slice(); 
+
+  value1 = currentCoords[1]; 
+  value2 = currentCoords[2]; 
+
+  value1 = Math.round(value1);
+  value2 = Math.round(value2);
+
+  document.getElementById("value1").innerHTML = "1: " + Math.round(currentCoords[1]); // -90 to 90
+  document.getElementById("value2").innerHTML = "2: " + Math.round(currentCoords[2]); // -180 to 180
+
+  if (socket && socket.readyState == 1) {
+    socket.send(color255 + "|" + value1 + "|" + value2);
+  } 
+}
+
+var aggregatedMovement = 0;
+var sampleCount = 0;
+function processAccell() {
+  if (sampleCount == 0) return;
+  var averagedAccel = Math.round(aggregatedMovement / sampleCount);
+
+  document.getElementById("accel").innerHTML = averagedAccel;
+  document.getElementById("sample-count").innerHTML = sampleCount;
+  
+  aggregatedMovement = 0;
+  sampleCount = 0;
+
+  if (socket && socket.readyState == 1) {
+    socket.send(color255 + "|" + averagedAccel);
+  }  
+}
+
+function connect() {
+  if (socket && socket.readyState != 1) {
+    socket = new WebSocket('ws://localhost:8001/');
+  }
+}
+
+function socketOpened() {
+  document.getElementById("log").innerHTML = 'connected.';
+}
+
+function socketClosed() {
+  document.getElementById("log").innerHTML = 'disconnected.';  
+}
+
+function onload() {
+
+  var bg = HSVtoRGB(color, 1, 1);
+
+  document.body.style.backgroundColor = "rgb(" + bg.r + ", " + bg.g + ", " + bg.b + ")";
+
+  window.addEventListener('devicemotion', function(event) {
+    aggregatedMovement += Math.abs(event.acceleration.x);
+    aggregatedMovement += Math.abs(event.acceleration.y);
+    aggregatedMovement += Math.abs(event.acceleration.z);
+    sampleCount = sampleCount + 1;
+
+    document.getElementById("accel-x").innerHTML = event.interval; 
+
+    /*
+    document.getElementById("accel-x").innerHTML = Math.round(event.acceleration.x); 
+    document.getElementById("accel-y").innerHTML = Math.round(event.acceleration.y);
+    document.getElementById("accel-z").innerHTML = Math.round(event.acceleration.z);
+    */
+  });
+
+  if (window.DeviceOrientationEvent) {
+      window.addEventListener("deviceorientation", function () {
+          tilt([event.alpha, event.beta, event.gamma]);
+      }, true);
+  } else if (window.DeviceMotionEvent) {
+      window.addEventListener('devicemotion', function () {
+          tilt([0, event.acceleration.x * 2, event.acceleration.y * 2]);
+      }, true);
+  } else {
+      window.addEventListener("MozOrientation", function () {
+          tilt([0, orientation.x * 50, orientation.y * 50]);
+      }, true);
+  }
+
+  setInterval(processAccell, 20);
+  //setInterval(connect, 1000);
+
+  socket = new WebSocket('<%= websocket_url %>');
+  socket.onopen = socketOpened;
+  socket.onclose = socketClosed;
+
+};
+
+</script>
+
+</head>
+
+<body onload="onload()">
+
+<div id="log"></div>
+<div id="accel-x"></div>
+<div id="sample-count"></div>
+<div id="accel"></div>
+
+
+</body>
+</html>
+
