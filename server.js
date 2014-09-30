@@ -27,7 +27,7 @@ logger.info('sending OSC data to ' + OSC_HOST + ' on port: ' + OSC_PORT)
 var app = express()
 app.get('/', function(req, res) {
     logger.info('got index request from: ' + req.ip)
-    var url = 'ws://' + lib.findClosestIP(req.ip) + ':8001/' 
+    var url = util.format('ws://%s:%s/', lib.findClosestIP(req.ip), WEBSOCKET_PORT)
     res.render('index.ejs', { websocket_url: url})
 })
 app.listen(HTTP_PORT)
