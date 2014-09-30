@@ -13,7 +13,11 @@ var HTTP_PORT = 8000
 
 var logger = new (winston.Logger)({
     transports: [
-        new (winston.transports.Console)({ timestamp: true, colorize: true }),
+        new (winston.transports.Console)({ 
+            level: 'debug',
+            timestamp: true, 
+            colorize: true 
+        }),
     ]
 })
 
@@ -32,14 +36,17 @@ logger.info ('web server started on port: ' + HTTP_PORT)
 var currentId = 0
 var server = ws.createServer(function(conn) {
     var connectionId = currentId++;
-    logger.info("new connection, assigned id: " + connectionId)
+    logger.debug("new connection, assigned id: " + connectionId)
     conn.on("text", function (str) {
         value = str.split("|")[1]
-        logger.info("received from connection #" + connectionId + ": " + str)
+        logger.debug("connection #" + connectionId + " received: " + str)
         client.send("/" + connectionId, value)
     })
     conn.on("close", function(code, reason) {
-        logger.info("connection #" + connectionId +" closed: " + reason)
+        logger.debug('connection #' + connectionId +' closed')
+    })
+    conn.on("error", function(error) {
+        logger.debug('connection #' + connectionId + ' error: ' + error.code)
     })
 }).listen(WEBSOCKET_PORT)
 
