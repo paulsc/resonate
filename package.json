@@ -11,6 +11,7 @@
         "nodejs-websocket": ">=1.0.0",
         "winston": ">=0.8.0",
         "express": ">=4.9.5",
-        "ejs": ">=1.0.0"
+        "ejs": ">=1.0.0",
+        "underscore": ">=1.7.0"
    }
 }
