@@ -5,11 +5,16 @@ var winston = require('winston')
 var express = require('express')
 var lib = require('./lib')
 var _ = require('underscore')
+var keypress = require('keypress')
+var fs = require('fs')
+var lazy = require('lazy')
 
 var OSC_PORT = 4711
 var OSC_HOST = 'localhost'
 var WEBSOCKET_PORT = 8001
 var HTTP_PORT = 8000
+
+var RECORD_FILE = 'session.rec'
 
 var logger = new (winston.Logger)({
     transports: [
@@ -33,14 +38,23 @@ app.get('/', function(req, res) {
 app.listen(HTTP_PORT)
 logger.info ('web server started on port: ' + HTTP_PORT)
 
+
+// websocket stuff
+
 var currentId = 0
 var server = ws.createServer(function(conn) {
     var connectionId = currentId++;
     logger.debug("new connection, assigned id: " + connectionId)
     conn.on("text", function (str) {
-        value = str.split("|")[1]
         logger.debug("connection #" + connectionId + " received: " + str)
+        value = str.split("|")[1]
         client.send("/" + connectionId, value)
+        if (record) {
+            var line = value + require('os').EOL
+            fs.appendFile(RECORD_FILE, line, function(err) {
+                if (err) throw err
+            })
+        }
     })
     conn.on("close", function(code, reason) {
         logger.debug('connection #' + connectionId +' closed')
@@ -57,3 +71,53 @@ _.each(lib.getIPList(), function(ip) {
     if (ip == '127.0.0.1') return
     logger.info('http://' + ip + ':' + HTTP_PORT)
 })
+
+
+// simulator stuff
+var simulators = []
+var record = false
+var recording = fs.readFileSync(RECORD_FILE).toString().split("\n")
+
+keypress(process.stdin);
+process.stdin.on('keypress', function (ch, key) {
+    if (key && key.ctrl && key.name == 'c') {
+        logger.info('exiting...')
+        process.exit()
+    }
+    else if (key && key.name == 'space') {
+        var lineCounter = 0
+        var simulatorId = currentId++
+        logger.info('added simulator #' + simulatorId)
+        var timer = setInterval(function() {
+            var value = recording[lineCounter++]
+            client.send("/" + simulatorId, value)
+            logger.debug('simulator #' + simulatorId + ' sending: ' + value)
+            if (lineCounter == recording.length) lineCounter = 0
+        }, 50)
+        simulators.push(timer)
+    }
+    else if (key && key.name == 'backspace') {
+        logger.info('removing simulator')
+        var timer = simulators.pop()
+        clearInterval(timer)
+    }
+    else if (key && key.ctrl && key.name == 'r') {
+        if (record) {
+            record = false
+            logger.info('recording stopped.')
+            return
+        }
+
+        logger.info('recording...')
+        fs.unlink(RECORD_FILE, function(err) {
+            if (err && err.code != 'ENOENT') throw err 
+        })
+        record = true
+    }
+});
+
+process.stdin.setRawMode(true);
+process.stdin.resume();
+
+logger.info('press space to add a simulator, backspace to remove one')
+_
