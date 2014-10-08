@@ -30,6 +30,7 @@ var client = new osc.Client(OSC_HOST, OSC_PORT)
 logger.info('sending OSC data to ' + OSC_HOST + ' on port: ' + OSC_PORT)
 
 var app = express()
+app.use(express.static('static'))
 app.get('/', function(req, res) {
     logger.info('got index request from: ' + req.ip)
     var url = util.format('ws://%s:%s/', lib.findClosestIP(req.ip), WEBSOCKET_PORT)
@@ -76,7 +77,6 @@ _.each(lib.getIPList(), function(ip) {
 // simulator stuff
 var simulators = []
 var record = false
-var recording = fs.readFileSync(RECORD_FILE).toString().split("\n")
 
 keypress(process.stdin);
 process.stdin.on('keypress', function (ch, key) {
@@ -85,6 +85,7 @@ process.stdin.on('keypress', function (ch, key) {
         process.exit()
     }
     else if (key && key.name == 'space') {
+        var recording = fs.readFileSync(RECORD_FILE).toString().split("\n")
         var lineCounter = 0
         var simulatorId = currentId++
         logger.info('added simulator #' + simulatorId)

@@ -4,160 +4,174 @@
 
 <style>
 body { 
-  font-family: "Arial"; 
-  font-size: 100px;
-  font-weight: bold;
+    font-family: "Arial"; 
+    font-size: 100px;
+    font-weight: bold;
 }
 </style>
 
+<script type="text/javascript" src="/underscore.js"></script>
+
+<!--
+<script src="//ajax.googleapis.com/ajax/libs/jquerymobile/1.4.3/jquery.mobile.min.js"></script>
+-->
+
 <script type="text/javascript">
 
-var liveCoords = [];
-var movementSeries = [];
-var color = Math.random();
-var color255 = Math.round(color * 255);
+    var socket;
+    var color = Math.random();
+    var color255 = Math.round(color * 255);
 
-function tilt(coords) {
-  liveCoords = coords;
+    function getBPM(input) {
 
-  /*
-  document.getElementById('output-x').innerHTML = Math.round(coords[0]);
-  document.getElementById('output-y').innerHTML = Math.round(coords[1]);
-  document.getElementById('output-z').innerHTML = Math.round(coords[2]);
-	*/
-}
+        if (input.length < 2) return { values: [], bpm: 0 };
 
-var oldCoords = [];
-var currentCoords = [];
-var socket;
+        var valueAboveOne = false;
+        for (i = 0; i < input.length; i++) {
+            if (input[i] > 1) {
+                valueAboveOne = true;
+                break;
+            }
+        }
 
-function getDiff(oldAngle, newAngle) {
-  var invertOld = 360 - oldAngle;
-  oldAngle = Math.min(oldAngle, invertOld);
+        if (!valueAboveOne) return { values: [], bpm: 0 };
 
-  var invertNew = 360 - newAngle;
-  newAngle = Math.min(invertNew, newAngle);
+        var autoCorrel = function(values, period) {
+            var result = 0;
+            for (var i = 0; i < values.length; i++) {
+                result += values[i] * values[(i + period) % values.length];
+            }
+            return result;
+        }
 
-  return Math.abs(oldAngle, newAngle); 
-}
+        var valuesWithIndex = [];
+        for (var i = 1; i < input.length / 2; i++) {
+            valuesWithIndex.push({ value: autoCorrel(input, i), index: i });
+        }
 
-function HSVtoRGB(h, s, v) {
-    var r, g, b, i, f, p, q, t;
-    if (h && s === undefined && v === undefined) {
-        s = h.s, v = h.v, h = h.h;
+        console.log(input)
+        console.log(valuesWithIndex)
+        var ordered = _.sortBy(valuesWithIndex, 
+                function(entry) { return entry.value });
+
+        var topValues = ordered.slice(-5);
+        var selectedResult = _.min(topValues, function(entry) { 
+                return entry.index; 
+        })
+
+        var max = selectedResult.index;
+        var bpm = 60 / (max * 0.05);
+        return { values: ordered, bpm: bpm };
     }
-    i = Math.floor(h * 6);
-    f = h * 6 - i;
-    p = v * (1 - s);
-    q = v * (1 - f * s);
-    t = v * (1 - (1 - f) * s);
-    switch (i % 6) {
-        case 0: r = v, g = t, b = p; break;
-        case 1: r = q, g = v, b = p; break;
-        case 2: r = p, g = v, b = t; break;
-        case 3: r = p, g = q, b = v; break;
-        case 4: r = t, g = p, b = v; break;
-        case 5: r = v, g = p, b = q; break;
+
+    function HSVtoRGB(h, s, v) {
+        var r, g, b, i, f, p, q, t;
+        if (h && s === undefined && v === undefined) {
+            s = h.s, v = h.v, h = h.h;
+        }
+        i = Math.floor(h * 6);
+        f = h * 6 - i;
+        p = v * (1 - s);
+        q = v * (1 - f * s);
+        t = v * (1 - (1 - f) * s);
+        switch (i % 6) {
+            case 0: r = v, g = t, b = p; break;
+            case 1: r = q, g = v, b = p; break;
+            case 2: r = p, g = v, b = t; break;
+            case 3: r = p, g = q, b = v; break;
+            case 4: r = t, g = p, b = v; break;
+            case 5: r = v, g = p, b = q; break;
+        }
+        return {
+    r: Math.floor(r * 255),
+           g: Math.floor(g * 255),
+           b: Math.floor(b * 255)
+        };
     }
-    return {
-        r: Math.floor(r * 255),
-        g: Math.floor(g * 255),
-        b: Math.floor(b * 255)
+
+    var aggregatedMovement = 0;
+    var sampleCount = 0;
+
+    function processAccell() {
+        if (sampleCount == 0) return;
+        var averagedAccel = Math.round(aggregatedMovement / sampleCount);
+
+        document.getElementById("accel").innerHTML = averagedAccel;
+        document.getElementById("sample-count").innerHTML = sampleCount;
+
+        aggregatedMovement = 0;
+        sampleCount = 0;
+
+        if (socket && socket.readyState == 1) {
+            socket.send(color255 + "|" + averagedAccel);
+        }  
+    }
+
+    function socketOpened() {
+        document.getElementById("log").innerHTML = 'connected.';
+    }
+
+    function socketClosed() {
+        document.getElementById("log").innerHTML = 'disconnected.';  
+    }
+
+    function onload() {
+
+        var bg = HSVtoRGB(color, 1, 1);
+
+        document.body.style.backgroundColor = "rgb(" + bg.r + ", " + bg.g + ", " + bg.b + ")";
+
+        var recording = new Array();
+        var MAX_RECORDING_LENGTH = 100;
+
+        setTimeout(function() {
+            //window.removeEventListener('devicemotion', deviceMotionHandler);
+        }, 10000);
+
+        var deviceMotionHandler = function(event) {
+            var summed = 0;
+            summed += Math.abs(event.acceleration.x);
+            summed += Math.abs(event.acceleration.y);
+            summed += Math.abs(event.acceleration.z);
+
+            if (socket && socket.readyState == 1) {
+                socket.send(color255 + "|" + summed);
+            }
+
+            recording.push(summed)
+            if (recording.length > MAX_RECORDING_LENGTH) recording.shift()
+
+            var result = getBPM(recording);
+            var bpm = result.bpm;
+            var values = result.values;
+
+            if (bpm == 0 || bpm < 30 || bpm > 240) bpm = '-';
+            else bpm = Math.round(bpm);
+
+            document.getElementById("accel").innerHTML = 'BPM: ' + bpm;
+
+            document.getElementById("sample-count").innerHTML = recording.length;
+        }
+
+        window.addEventListener('devicemotion', deviceMotionHandler);
+        var on = true;
+        document.addEventListener('touchstart', function(e) {
+            if (on) {
+                window.removeEventListener('devicemotion', deviceMotionHandler);
+                on = false;
+            }
+            else {
+                window.addEventListener('devicemotion', deviceMotionHandler);
+                on = true;
+            }
+        }, false);
+
+        //setInterval(processAccell, 20);
+
+        socket = new WebSocket('<%= websocket_url %>');
+        socket.onopen = socketOpened;
+        socket.onclose = socketClosed;
     };
-}
-
-function process() {
-  //oldCoords = currentCoords.slice();
-  currentCoords = liveCoords.slice(); 
-
-  value1 = currentCoords[1]; 
-  value2 = currentCoords[2]; 
-
-  value1 = Math.round(value1);
-  value2 = Math.round(value2);
-
-  document.getElementById("value1").innerHTML = "1: " + Math.round(currentCoords[1]); // -90 to 90
-  document.getElementById("value2").innerHTML = "2: " + Math.round(currentCoords[2]); // -180 to 180
-
-  if (socket && socket.readyState == 1) {
-    socket.send(color255 + "|" + value1 + "|" + value2);
-  } 
-}
-
-var aggregatedMovement = 0;
-var sampleCount = 0;
-function processAccell() {
-  if (sampleCount == 0) return;
-  var averagedAccel = Math.round(aggregatedMovement / sampleCount);
-
-  document.getElementById("accel").innerHTML = averagedAccel;
-  document.getElementById("sample-count").innerHTML = sampleCount;
-  
-  aggregatedMovement = 0;
-  sampleCount = 0;
-
-  if (socket && socket.readyState == 1) {
-    socket.send(color255 + "|" + averagedAccel);
-  }  
-}
-
-function connect() {
-  if (socket && socket.readyState != 1) {
-    socket = new WebSocket('ws://localhost:8001/');
-  }
-}
-
-function socketOpened() {
-  document.getElementById("log").innerHTML = 'connected.';
-}
-
-function socketClosed() {
-  document.getElementById("log").innerHTML = 'disconnected.';  
-}
-
-function onload() {
-
-  var bg = HSVtoRGB(color, 1, 1);
-
-  document.body.style.backgroundColor = "rgb(" + bg.r + ", " + bg.g + ", " + bg.b + ")";
-
-  window.addEventListener('devicemotion', function(event) {
-    aggregatedMovement += Math.abs(event.acceleration.x);
-    aggregatedMovement += Math.abs(event.acceleration.y);
-    aggregatedMovement += Math.abs(event.acceleration.z);
-    sampleCount = sampleCount + 1;
-
-    document.getElementById("accel-x").innerHTML = event.interval; 
-
-    /*
-    document.getElementById("accel-x").innerHTML = Math.round(event.acceleration.x); 
-    document.getElementById("accel-y").innerHTML = Math.round(event.acceleration.y);
-    document.getElementById("accel-z").innerHTML = Math.round(event.acceleration.z);
-    */
-  });
-
-  if (window.DeviceOrientationEvent) {
-      window.addEventListener("deviceorientation", function () {
-          tilt([event.alpha, event.beta, event.gamma]);
-      }, true);
-  } else if (window.DeviceMotionEvent) {
-      window.addEventListener('devicemotion', function () {
-          tilt([0, event.acceleration.x * 2, event.acceleration.y * 2]);
-      }, true);
-  } else {
-      window.addEventListener("MozOrientation", function () {
-          tilt([0, orientation.x * 50, orientation.y * 50]);
-      }, true);
-  }
-
-  setInterval(processAccell, 20);
-  //setInterval(connect, 1000);
-
-  socket = new WebSocket('<%= websocket_url %>');
-  socket.onopen = socketOpened;
-  socket.onclose = socketClosed;
-
-};
 
 </script>
 
@@ -165,11 +179,10 @@ function onload() {
 
 <body onload="onload()">
 
-<div id="log"></div>
-<div id="accel-x"></div>
-<div id="sample-count"></div>
-<div id="accel"></div>
-
+    <div id="log"></div>
+    <div id="accel-x"></div>
+    <div id="sample-count"></div>
+    <div id="accel"></div>
 
 </body>
 </html>
