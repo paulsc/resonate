@@ -48,10 +48,12 @@ var server = ws.createServer(function(conn) {
     logger.debug("new connection, assigned id: " + connectionId)
     conn.on("text", function (str) {
         logger.debug("connection #" + connectionId + " received: " + str)
-        value = str.split("|")[1]
-        client.send("/" + connectionId, value)
+        split = str.split("|")
+        var value = parseFloat(split[1])
+        var color = parseInt(split[0])
+        client.send("/" + connectionId, value, color)
         if (record) {
-            var line = value + require('os').EOL
+            var line = value + '|' + color + require('os').EOL
             fs.appendFile(RECORD_FILE, line, function(err) {
                 if (err) throw err
             })
@@ -89,10 +91,13 @@ process.stdin.on('keypress', function (ch, key) {
         var lineCounter = 0
         var simulatorId = currentId++
         logger.info('added simulator #' + simulatorId)
+        var color = Math.round(Math.random() * 255)
         var timer = setInterval(function() {
-            var value = recording[lineCounter++]
-            client.send("/" + simulatorId, value)
-            logger.debug('simulator #' + simulatorId + ' sending: ' + value)
+            var line = recording[lineCounter++]
+            var split = line.split('|')
+            var value = parseFloat(split[0])
+            client.send("/" + simulatorId, value, color)
+            logger.debug('simulator #' + simulatorId + ' sending: ' + value + ' ' + color)
             if (lineCounter == recording.length) lineCounter = 0
         }, 50)
         simulators.push(timer)
