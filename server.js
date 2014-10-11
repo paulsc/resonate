@@ -76,7 +76,6 @@ _.each(lib.getIPList(), function(ip) {
 })
 
 
-
 // simulator stuff
 var simulators = []
 var record = false
@@ -92,15 +91,13 @@ process.stdin.on('keypress', function (ch, key) {
         var lineCounter = 0
         var simulatorId = currentId++
         logger.info('added simulator #' + simulatorId)
-        var color = Math.random()
-        var bg = HSVtoRGB(color, 1, 1);
-
+        var color = Math.round(Math.random() * 255)
         var timer = setInterval(function() {
             var line = recording[lineCounter++]
             var split = line.split('|')
             var value = parseFloat(split[0])
-            client.send("/" + simulatorId, value, bg.r, bg.g, bg.b)
-            logger.debug('simulator #' + simulatorId + ' sending: ' + value)
+            client.send("/" + simulatorId, value, color)
+            logger.debug('simulator #' + simulatorId + ' sending: ' + value + ' ' + color)
             if (lineCounter == recording.length) lineCounter = 0
         }, 50)
         simulators.push(timer)
@@ -129,31 +126,4 @@ process.stdin.setRawMode(true);
 process.stdin.resume();
 
 logger.info('press space to add a simulator, backspace to remove one')
-
-
-function HSVtoRGB(h, s, v) {
-    var r, g, b, i, f, p, q, t;
-    if (h && s === undefined && v === undefined) {
-        s = h.s, v = h.v, h = h.h;
-    }
-    i = Math.floor(h * 6);
-    f = h * 6 - i;
-    p = v * (1 - s);
-    q = v * (1 - f * s);
-    t = v * (1 - (1 - f) * s);
-    switch (i % 6) {
-        case 0: r = v, g = t, b = p; break;
-        case 1: r = q, g = v, b = p; break;
-        case 2: r = p, g = v, b = t; break;
-        case 3: r = p, g = q, b = v; break;
-        case 4: r = t, g = p, b = v; break;
-        case 5: r = v, g = p, b = q; break;
-    }
-    return {
-r: Math.floor(r * 255),
-       g: Math.floor(g * 255),
-       b: Math.floor(b * 255)
-    };
-}
-
-
+_
