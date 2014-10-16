@@ -51,8 +51,8 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 672.916687, 168.0, 53.0, 58.0 ],
-					"text" : "mouse 230 103 0 0 0 0 0 0"
+					"patching_rect" : [ 672.916687, 168.0, 55.0, 58.0 ],
+					"text" : "mouse 279 254 0 0 0 0 0 0"
 				}
 
 			}
@@ -108,7 +108,7 @@
 					"numoutlets" : 2,
 					"outlettype" : [ "jit_matrix", "" ],
 					"patching_rect" : [ 768.416687, 239.0, 117.0, 20.0 ],
-					"text" : "jit.qt.record 320 240"
+					"text" : "jit.qt.record 793 651"
 				}
 
 			}
@@ -195,35 +195,6 @@
 				"box" : 				{
 					"fontname" : "Arial",
 					"fontsize" : 12.0,
-					"id" : "obj-81",
-					"linecount" : 3,
-					"maxclass" : "message",
-					"numinlets" : 2,
-					"numoutlets" : 1,
-					"outlettype" : [ "" ],
-					"patching_rect" : [ 4.0, 378.0, 50.0, 45.0 ],
-					"text" : "cell 2 val 0. 0. 0."
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"fontname" : "Arial",
-					"fontsize" : 12.0,
-					"id" : "obj-78",
-					"maxclass" : "message",
-					"numinlets" : 2,
-					"numoutlets" : 1,
-					"outlettype" : [ "" ],
-					"patching_rect" : [ 5.0, 345.0, 55.0, 18.0 ],
-					"text" : "getcell 2"
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"fontname" : "Arial",
-					"fontsize" : 12.0,
 					"id" : "obj-98",
 					"maxclass" : "newobj",
 					"numinlets" : 0,
@@ -244,6 +215,11 @@
 					"numoutlets" : 2,
 					"outlettype" : [ "", "" ],
 					"patching_rect" : [ 757.916687, 108.0, 67.0, 20.0 ],
+					"saved_object_attributes" : 					{
+						"filename" : "layout.js",
+						"parameter_enable" : 0
+					}
+,
 					"text" : "js layout.js"
 				}
 
@@ -967,7 +943,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 560.416687, 263.0, 50.0, 45.0 ],
-					"text" : "/2 0.218779 207"
+					"text" : "/7 3.94298 216"
 				}
 
 			}
@@ -2875,15 +2851,6 @@
 			}
 , 			{
 				"patchline" : 				{
-					"destination" : [ "obj-81", 1 ],
-					"disabled" : 0,
-					"hidden" : 0,
-					"source" : [ "obj-64", 1 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
 					"destination" : [ "obj-61", 1 ],
 					"disabled" : 0,
 					"hidden" : 0,
@@ -2996,15 +2963,6 @@
 					"disabled" : 0,
 					"hidden" : 0,
 					"source" : [ "obj-76", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-64", 0 ],
-					"disabled" : 0,
-					"hidden" : 0,
-					"source" : [ "obj-78", 0 ]
 				}
 
 			}
@@ -3212,6 +3170,13 @@
 				"bootpath" : "/Users/paul/workspace/resonate/max/patchers",
 				"patcherrelativepath" : ".",
 				"type" : "JSON",
+				"implicit" : 1
+			}
+, 			{
+				"name" : "layout.js",
+				"bootpath" : "/Users/paul/workspace/resonate/max/code",
+				"patcherrelativepath" : "../code",
+				"type" : "TEXT",
 				"implicit" : 1
 			}
  ]
