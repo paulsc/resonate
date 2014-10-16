@@ -42,7 +42,7 @@ logger.info ('web server started on port: ' + HTTP_PORT)
 
 // websocket stuff
 
-var currentId = 0
+var currentId = 1
 var server = ws.createServer(function(conn) {
     var connectionId = currentId++;
     logger.debug("new connection, assigned id: " + connectionId)
