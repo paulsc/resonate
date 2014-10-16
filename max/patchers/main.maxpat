@@ -31,6 +31,91 @@
 				"box" : 				{
 					"fontname" : "Arial",
 					"fontsize" : 12.0,
+					"id" : "obj-87",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 2,
+					"outlettype" : [ "jit_matrix", "" ],
+					"patching_rect" : [ 768.416687, 211.5, 126.0, 20.0 ],
+					"text" : "jit.gl.asyncread cubes"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontname" : "Arial",
+					"fontsize" : 12.0,
+					"id" : "obj-85",
+					"linecount" : 4,
+					"maxclass" : "message",
+					"numinlets" : 2,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 672.916687, 168.0, 53.0, 58.0 ],
+					"text" : "mouse 230 103 0 0 0 0 0 0"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontname" : "Arial",
+					"fontsize" : 12.0,
+					"id" : "obj-80",
+					"maxclass" : "message",
+					"numinlets" : 2,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 490.333374, 117.0, 49.0, 18.0 ],
+					"text" : "getsize"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontname" : "Arial",
+					"fontsize" : 12.0,
+					"id" : "obj-132",
+					"maxclass" : "message",
+					"numinlets" : 2,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 768.416687, 183.0, 33.0, 18.0 ],
+					"text" : "stop"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontname" : "Arial",
+					"fontsize" : 12.0,
+					"id" : "obj-130",
+					"maxclass" : "message",
+					"numinlets" : 2,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 824.416687, 183.0, 138.0, 18.0 ],
+					"text" : "write test3.mov 30 h263"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontname" : "Arial",
+					"fontsize" : 12.0,
+					"id" : "obj-128",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 2,
+					"outlettype" : [ "jit_matrix", "" ],
+					"patching_rect" : [ 768.416687, 239.0, 117.0, 20.0 ],
+					"text" : "jit.qt.record 320 240"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontname" : "Arial",
+					"fontsize" : 12.0,
 					"id" : "obj-127",
 					"maxclass" : "message",
 					"numinlets" : 2,
@@ -159,11 +244,6 @@
 					"numoutlets" : 2,
 					"outlettype" : [ "", "" ],
 					"patching_rect" : [ 757.916687, 108.0, 67.0, 20.0 ],
-					"saved_object_attributes" : 					{
-						"filename" : "layout.js",
-						"parameter_enable" : 0
-					}
-,
 					"text" : "js layout.js"
 				}
 
@@ -887,7 +967,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 560.416687, 263.0, 50.0, 45.0 ],
-					"text" : "/1 3.445272 70"
+					"text" : "/2 0.218779 207"
 				}
 
 			}
@@ -2300,10 +2380,37 @@
 			}
 , 			{
 				"patchline" : 				{
+					"destination" : [ "obj-128", 0 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"source" : [ "obj-130", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-128", 0 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"source" : [ "obj-132", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
 					"destination" : [ "obj-5", 1 ],
 					"disabled" : 0,
 					"hidden" : 0,
 					"source" : [ "obj-14", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-85", 1 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"source" : [ "obj-15", 1 ]
 				}
 
 			}
@@ -2939,6 +3046,15 @@
 			}
 , 			{
 				"patchline" : 				{
+					"destination" : [ "obj-15", 0 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"source" : [ "obj-80", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
 					"destination" : [ "obj-84", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
@@ -2988,6 +3104,15 @@
 					"disabled" : 0,
 					"hidden" : 0,
 					"source" : [ "obj-86", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-128", 0 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"source" : [ "obj-87", 0 ]
 				}
 
 			}
@@ -3087,32 +3212,6 @@
 				"bootpath" : "/Users/paul/workspace/resonate/max/patchers",
 				"patcherrelativepath" : ".",
 				"type" : "JSON",
-				"implicit" : 1
-			}
-, 			{
-				"name" : "js",
-				"bootpath" : "/Users/paul/workspace/resonate/max",
-				"patcherrelativepath" : "..",
-				"type" : "fold",
-				"implicit" : 1
-			}
-, 			{
-				"name" : "welcome-plugins.js",
-				"bootpath" : "/Applications/Max 6.1/Cycling '74/interfaces/welcome-screen/js",
-				"patcherrelativepath" : "../../../../../../Applications/Max 6.1/Cycling '74/interfaces/welcome-screen/js",
-				"type" : "TEXT"
-			}
-, 			{
-				"name" : "welcome-script.js",
-				"bootpath" : "/Applications/Max 6.1/Cycling '74/interfaces/welcome-screen/js",
-				"patcherrelativepath" : "../../../../../../Applications/Max 6.1/Cycling '74/interfaces/welcome-screen/js",
-				"type" : "TEXT"
-			}
-, 			{
-				"name" : "layout.js",
-				"bootpath" : "/Users/paul/workspace/resonate/max/code",
-				"patcherrelativepath" : "../code",
-				"type" : "TEXT",
 				"implicit" : 1
 			}
  ]

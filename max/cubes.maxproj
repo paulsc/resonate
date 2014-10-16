@@ -2,7 +2,7 @@
 	"name" : "cubes",
 	"version" : 1,
 	"creationdate" : -799604632,
-	"modificationdate" : -799604575,
+	"modificationdate" : -798626084,
 	"viewrect" : [ 25.0, 69.0, 300.0, 500.0 ],
 	"autoorganize" : 1,
 	"hideprojectwindow" : 0,
@@ -18,6 +18,14 @@
 ,
 			"polycube.maxpat" : 			{
 				"kind" : "patcher",
+				"local" : 1
+			}
+
+		}
+,
+		"code" : 		{
+			"layout.js" : 			{
+				"kind" : "javascript",
 				"local" : 1
 			}
 
