@@ -38,6 +38,23 @@ function msg_int(n)
 			moveto(3, 1, -1, 0);
 			moveto(4, -1, -1, 0);
 			break;
+		case 5:
+			moveto(1, -2, 1, 0);
+			moveto(2, 0, 1, 0);
+			moveto(3, 2, 1, 0);
+			moveto(4, -1, -1, 0);
+			position(5, 1, -1, 0);
+			moveto(5, 1, -1, 0);
+			break
+		case 6:
+			moveto(1, -2, 1, 0);
+			moveto(2, 0, 1, 0);
+			moveto(3, 2, 1, 0);
+			moveto(4, -2, -1, 0);
+			moveto(5, 0, -1, 0);
+			position(6, 1, -1, 0);
+			moveto(6, 2, -1, 0);
+			break;
 	}
 }	
 
