@@ -29,8 +29,8 @@ function msg_int(n)
 		case 4:
 			moveto(0, -1, 1, 0);
 			moveto(1, 1, 1, 0);
-			moveto(2, -1, -1, 0);
-			moveto(3, 1, -1, 0);
+			moveto(2, 1, -1, 0);
+			moveto(3, -1, -1, 0);
 			break;
 	}
 }	

@@ -774,13 +774,13 @@
 					"fontname" : "Arial",
 					"fontsize" : 12.0,
 					"id" : "obj-23",
-					"linecount" : 3,
+					"linecount" : 4,
 					"maxclass" : "message",
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 560.416687, 263.0, 50.0, 45.0 ],
-					"text" : "/3 9.321555 104"
+					"patching_rect" : [ 560.416687, 263.0, 50.0, 58.0 ],
+					"text" : "/3 10.698123 246"
 				}
 
 			}
