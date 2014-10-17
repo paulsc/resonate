@@ -19,7 +19,7 @@ var RECORD_FILE = 'session.rec'
 var logger = new (winston.Logger)({
     transports: [
         new (winston.transports.Console)({ 
-            level: 'info',
+            level: 'debug',
             timestamp: true, 
             colorize: true 
         }),
@@ -49,9 +49,11 @@ var server = ws.createServer(function(conn) {
     conn.on("text", function (str) {
         logger.debug("connection #" + connectionId + " received: " + str)
         split = str.split("|")
-        var value = parseFloat(split[1])
         var color = parseInt(split[0])
-        client.send("/" + connectionId, value, color)
+        var alpha = parseInt(split[1])
+        var beta = parseInt(split[2])
+        var gamma = parseInt(split[3])
+        client.send("/" + connectionId, color, alpha, beta, gamma)
         if (record) {
             var line = value + '|' + color + require('os').EOL
             fs.appendFile(RECORD_FILE, line, function(err) {
