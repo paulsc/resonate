@@ -136,7 +136,11 @@ process.stdin.on('keypress', function (ch, key) {
         simulators.push(timer)
     }
     else if (key && key.name == 'backspace') {
-        logger.info('removing simulator')
+        if (simulators.length == 0) {
+            logger.info('no running simulators')
+            return
+        }
+        logger.info('removing simulator #' + simulators.length)
         var timer = simulators.pop()
         clearInterval(timer)
     }
