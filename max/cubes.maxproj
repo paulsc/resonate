@@ -2,8 +2,8 @@
 	"name" : "cubes",
 	"version" : 1,
 	"creationdate" : -799604632,
-	"modificationdate" : -798626084,
-	"viewrect" : [ 25.0, 69.0, 300.0, 500.0 ],
+	"modificationdate" : -798033859,
+	"viewrect" : [ 25.0, 69.0, 301.0, 299.0 ],
 	"autoorganize" : 1,
 	"hideprojectwindow" : 0,
 	"showdependencies" : 1,
@@ -25,6 +25,11 @@
 ,
 		"code" : 		{
 			"layout.js" : 			{
+				"kind" : "javascript",
+				"local" : 1
+			}
+,
+			"mov-avg.js" : 			{
 				"kind" : "javascript",
 				"local" : 1
 			}

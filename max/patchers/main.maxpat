@@ -31,6 +31,25 @@
 				"box" : 				{
 					"fontname" : "Arial",
 					"fontsize" : 12.0,
+					"id" : "obj-116",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 597.416687, 222.0, 69.0, 20.0 ],
+					"saved_object_attributes" : 					{
+						"filename" : "mov-avg.js",
+						"parameter_enable" : 0
+					}
+,
+					"text" : "js mov-avg"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontname" : "Arial",
+					"fontsize" : 12.0,
 					"id" : "obj-99",
 					"maxclass" : "message",
 					"numinlets" : 2,
@@ -64,7 +83,7 @@
 					"numinlets" : 0,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 597.416687, 225.0, 48.0, 20.0 ],
+					"patching_rect" : [ 597.416687, 188.5, 48.0, 20.0 ],
 					"text" : "r mood"
 				}
 
@@ -2566,7 +2585,7 @@
 			}
 , 			{
 				"patchline" : 				{
-					"destination" : [ "obj-20", 0 ],
+					"destination" : [ "obj-116", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
 					"source" : [ "obj-105", 0 ]
@@ -2624,6 +2643,15 @@
 					"disabled" : 0,
 					"hidden" : 0,
 					"source" : [ "obj-114", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-20", 0 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"source" : [ "obj-116", 0 ]
 				}
 
 			}
@@ -3438,6 +3466,13 @@
 			}
 , 			{
 				"name" : "layout.js",
+				"bootpath" : "/Users/paul/workspace/resonate/max/code",
+				"patcherrelativepath" : "../code",
+				"type" : "TEXT",
+				"implicit" : 1
+			}
+, 			{
+				"name" : "mov-avg.js",
 				"bootpath" : "/Users/paul/workspace/resonate/max/code",
 				"patcherrelativepath" : "../code",
 				"type" : "TEXT",
