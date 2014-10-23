@@ -31,6 +31,20 @@
 				"box" : 				{
 					"fontname" : "Arial",
 					"fontsize" : 12.0,
+					"id" : "obj-81",
+					"maxclass" : "number",
+					"numinlets" : 1,
+					"numoutlets" : 2,
+					"outlettype" : [ "int", "bang" ],
+					"parameter_enable" : 0,
+					"patching_rect" : [ 364.0, 602.0, 50.0, 20.0 ]
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontname" : "Arial",
+					"fontsize" : 12.0,
 					"id" : "obj-27",
 					"maxclass" : "newobj",
 					"numinlets" : 2,
@@ -59,7 +73,7 @@
 							"architecture" : "x86"
 						}
 ,
-						"rect" : [ 50.0, 94.0, 640.0, 480.0 ],
+						"rect" : [ 256.0, 304.0, 640.0, 480.0 ],
 						"bglocked" : 0,
 						"openinpresentation" : 0,
 						"default_fontsize" : 12.0,
@@ -116,7 +130,7 @@
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
 									"patching_rect" : [ 531.0, 282.0, 50.0, 18.0 ],
-									"text" : "175"
+									"text" : "241"
 								}
 
 							}
@@ -449,7 +463,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 672.916687, 168.0, 59.0, 58.0 ],
-					"text" : "mouse 170 147 0 0 0 0 0 0"
+					"text" : "mouse 179 185 0 0 0 0 0 0"
 				}
 
 			}
@@ -1250,13 +1264,13 @@
 					"fontname" : "Arial",
 					"fontsize" : 12.0,
 					"id" : "obj-23",
-					"linecount" : 2,
+					"linecount" : 3,
 					"maxclass" : "message",
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 556.916687, 257.5, 50.0, 31.0 ],
-					"text" : "/1 163 24 2 5"
+					"patching_rect" : [ 556.916687, 257.5, 50.0, 45.0 ],
+					"text" : "/2 21 83 48 -61"
 				}
 
 			}
@@ -1519,7 +1533,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "jit_matrix", "" ],
-					"patching_rect" : [ 80.666687, 517.0, 374.333313, 33.0 ],
+					"patching_rect" : [ 80.666687, 517.0, 600.0, 33.0 ],
 					"text" : "jit.gl.gridshape @shape opencube @cull_face 0 @poly_mode 1 1 @dim 20 20 @blend_enable 1 @color 1 1 1 0.4 @matrixoutput 1"
 				}
 
@@ -2331,8 +2345,8 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "bang", "" ],
-					"patching_rect" : [ 90.0, 99.0, 188.0, 20.0 ],
-					"text" : "jit.gl.render @erase_color 0 0 0 1"
+					"patching_rect" : [ 90.0, 99.0, 198.0, 20.0 ],
+					"text" : "jit.gl.render @erase_color 0 0 0 0.2"
 				}
 
 			}
@@ -3148,6 +3162,15 @@
 					"disabled" : 0,
 					"hidden" : 0,
 					"source" : [ "obj-80", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-55", 0 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"source" : [ "obj-81", 0 ]
 				}
 
 			}

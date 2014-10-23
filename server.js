@@ -19,7 +19,7 @@ var RECORD_FILE = 'session.rec'
 var logger = new (winston.Logger)({
     transports: [
         new (winston.transports.Console)({ 
-            level: 'debug',
+            level: 'info',
             timestamp: true, 
             colorize: true 
         }),
@@ -53,9 +53,12 @@ var server = ws.createServer(function(conn) {
         var alpha = parseInt(split[1])
         var beta = parseInt(split[2])
         var gamma = parseInt(split[3])
-        client.send("/" + connectionId, color, alpha, beta, gamma)
+
+        var payload = [ "/" + connectionId, color, alpha, beta, gamma ]
+        client.send.apply(client, payload)
+
         if (record) {
-            var line = value + '|' + color + require('os').EOL
+            var line = payload.join("|") + require('os').EOL
             fs.appendFile(RECORD_FILE, line, function(err) {
                 if (err) throw err
             })
@@ -96,10 +99,14 @@ process.stdin.on('keypress', function (ch, key) {
         var color = Math.round(Math.random() * 255)
         var timer = setInterval(function() {
             var line = recording[lineCounter++]
-            var split = line.split('|')
-            var value = parseFloat(split[0])
-            client.send("/" + simulatorId, value, color)
-            logger.debug('simulator #' + simulatorId + ' sending: ' + value + ' ' + color)
+            var payload = line.split('|')
+            payload[0] = "/" + simulatorId
+            payload[1] = color
+            payload = _.map(payload, function(el) {  return isNaN(el) ? el : +el })
+
+            client.send.apply(client, payload)
+            logger.debug('simulator #' + simulatorId + ' sending: ' + payload)
+
             if (lineCounter == recording.length) lineCounter = 0
         }, 50)
         simulators.push(timer)
