@@ -48,7 +48,7 @@ setInterval(function() {
     var mood = movements.sum()
     logger.debug('sending global mood: ' + mood);
     client.send('/0', mood)
-}, 100)
+}, 50)
 
 // express stuff
 
