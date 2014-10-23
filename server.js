@@ -123,7 +123,7 @@ process.stdin.on('keypress', function (ch, key) {
             sendToMax(simulatorId, payload)
             logger.debug('simulator #' + simulatorId + ' sending: ' + payload)
 
-            if (lineCounter == recording.length) lineCounter = 0
+            if (lineCounter == recording.length - 1) lineCounter = 0
         }, 50)
         simulators.push(timer)
     }
