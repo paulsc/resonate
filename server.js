@@ -26,6 +26,10 @@ var logger = new (winston.Logger)({
     ]
 })
 
+var parseNumbers = function(arr) {
+    return _.map(arr, function(el) { return isNaN(el) ? el : +el })
+}
+
 var client = new osc.Client(OSC_HOST, OSC_PORT)
 logger.info('sending OSC data to ' + OSC_HOST + ' on port: ' + OSC_PORT)
 
@@ -49,12 +53,8 @@ var server = ws.createServer(function(conn) {
     conn.on("text", function (str) {
         logger.debug("connection #" + connectionId + " received: " + str)
         split = str.split("|")
-        var color = parseInt(split[0])
-        var alpha = parseInt(split[1])
-        var beta = parseInt(split[2])
-        var gamma = parseInt(split[3])
-
-        var payload = [ "/" + connectionId, color, alpha, beta, gamma ]
+        var payload = parseNumbers(split)
+        payload.unshift("/" + connectionId)
         client.send.apply(client, payload)
 
         if (record) {
@@ -102,7 +102,7 @@ process.stdin.on('keypress', function (ch, key) {
             var payload = line.split('|')
             payload[0] = "/" + simulatorId
             payload[1] = color
-            payload = _.map(payload, function(el) {  return isNaN(el) ? el : +el })
+            payload = parseNumbers(payload)
 
             client.send.apply(client, payload)
             logger.debug('simulator #' + simulatorId + ' sending: ' + payload)

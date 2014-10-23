@@ -55,22 +55,41 @@ body {
         document.getElementById("log").innerHTML = 'disconnected.';  
     }
 
+    function average(arr) {
+        var sum = 0;
+        for (i = 0; i < arr.length; i++) {
+            sum += arr[i];
+        }
+        return sum / arr.length;
+    }
+
     function onload() {
 
         var bg = HSVtoRGB(color, 1, 1);
         document.body.style.backgroundColor = "rgb(" + bg.r + ", " + bg.g + ", " + bg.b + ")";
 
-        var deviceMotionHandler = function(event) {
-            var summed = 0;
-            summed += Math.abs(event.acceleration.x);
-            summed += Math.abs(event.acceleration.y);
-            summed += Math.abs(event.acceleration.z);
+        var summedMotion = 0;
+        var historicalMotion = [];
+        var MOVING_AVERAGE_POINTS = 10;
+        var dampedMotion = 0;
 
-            if (socket && socket.readyState == 1) {
-                socket.send(color255 + "|" + summed);
+        var deviceMotionHandler = function(event) {
+            var newSummedMotion = 0;
+            newSummedMotion += Math.abs(event.acceleration.x);
+            newSummedMotion += Math.abs(event.acceleration.y);
+            newSummedMotion += Math.abs(event.acceleration.z);
+            summedMotion = Math.round(newSummedMotion);
+
+            historicalMotion.push(summedMotion);
+            if (historicalMotion.length > MOVING_AVERAGE_POINTS) {
+                historicalMotion.shift();
             }
+            dampedMotion = Math.round(average(historicalMotion));
+
+            document.getElementById("log-c").innerHTML = 
+                "<br/>dmotion(" + MOVING_AVERAGE_POINTS + ")<br/>" + dampedMotion;
         }
-        // window.addEventListener('devicemotion', deviceMotionHandler);
+        window.addEventListener('devicemotion', deviceMotionHandler);
 
         var alpha, beta, gamma;
         var deviceOrientationHandler = function(event) {
@@ -81,20 +100,21 @@ body {
             beta = Math.round(event.beta);
             gamma = Math.round(event.gamma);
             document.getElementById("log-b").innerHTML = 
-                alpha + "<br/>" + beta + "<br/>" + gamma;
+                "<br/>orientation<br/>" + alpha + "<br/>" + beta + "<br/>" + gamma;
         };
 
         if (window.DeviceOrientationEvent) {
             window.addEventListener("deviceorientation", deviceOrientationHandler, true);
         }
 
-        var sendOrientation = function() {
+        var send = function() {
             if (socket && socket.readyState == 1) {
-                socket.send(color255 + "|" + alpha + "|" + beta + "|" + gamma);
+                socket.send(color255 + "|" + alpha + "|" + beta 
+                        + "|" + gamma + "|" + dampedMotion);
             }
         }
 
-        setInterval(sendOrientation, 100);
+        setInterval(send, 100);
 
         socket = new WebSocket('<%= websocket_url %>');
         socket.onopen = socketOpened;
@@ -109,6 +129,7 @@ body {
 
     <div id="log"></div>
     <div id="log-b"></div>
+    <div id="log-c"></div>
 
 </body>
 </html>

@@ -4,7 +4,7 @@
 		"appversion" : 		{
 			"major" : 6,
 			"minor" : 1,
-			"revision" : 8,
+			"revision" : 9,
 			"architecture" : "x86"
 		}
 ,
@@ -69,7 +69,7 @@
 						"appversion" : 						{
 							"major" : 6,
 							"minor" : 1,
-							"revision" : 8,
+							"revision" : 9,
 							"architecture" : "x86"
 						}
 ,
@@ -117,20 +117,6 @@
 									"outlettype" : [ "bang", "int" ],
 									"patching_rect" : [ 435.0, 218.0, 32.5, 20.0 ],
 									"text" : "t b i"
-								}
-
-							}
-, 							{
-								"box" : 								{
-									"fontname" : "Arial",
-									"fontsize" : 12.0,
-									"id" : "obj-18",
-									"maxclass" : "message",
-									"numinlets" : 2,
-									"numoutlets" : 1,
-									"outlettype" : [ "" ],
-									"patching_rect" : [ 531.0, 282.0, 50.0, 18.0 ],
-									"text" : "241"
 								}
 
 							}
@@ -304,15 +290,6 @@
 							}
 , 							{
 								"patchline" : 								{
-									"destination" : [ "obj-18", 1 ],
-									"disabled" : 0,
-									"hidden" : 0,
-									"source" : [ "obj-16", 0 ]
-								}
-
-							}
-, 							{
-								"patchline" : 								{
 									"destination" : [ "obj-6", 0 ],
 									"disabled" : 0,
 									"hidden" : 0,
@@ -463,7 +440,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 672.916687, 168.0, 59.0, 58.0 ],
-					"text" : "mouse 179 185 0 0 0 0 0 0"
+					"text" : "mouse 261 265 0 0 0 0 0 0"
 				}
 
 			}
@@ -1270,7 +1247,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 556.916687, 257.5, 50.0, 45.0 ],
-					"text" : "/2 21 83 48 -61"
+					"text" : "/1 20 16 -2 3 0"
 				}
 
 			}
@@ -1635,7 +1612,7 @@
 						"appversion" : 						{
 							"major" : 6,
 							"minor" : 1,
-							"revision" : 8,
+							"revision" : 9,
 							"architecture" : "x86"
 						}
 ,
@@ -2345,8 +2322,8 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "bang", "" ],
-					"patching_rect" : [ 90.0, 99.0, 198.0, 20.0 ],
-					"text" : "jit.gl.render @erase_color 0 0 0 0.2"
+					"patching_rect" : [ 91.0, 99.0, 188.0, 20.0 ],
+					"text" : "jit.gl.render @erase_color 0 0 0 1"
 				}
 
 			}
