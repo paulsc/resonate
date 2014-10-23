@@ -1,7 +1,7 @@
 inlets = 1;
 outlets = 2;
 
-var spacer = 1.5;
+var spacer = 1.3;
 
 function moveto(index, x, y, z) {
 	outlet(0, [0, "target", index]);

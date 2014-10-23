@@ -13,6 +13,7 @@ var OSC_PORT = 4711
 var OSC_HOST = 'localhost'
 var WEBSOCKET_PORT = 8001
 var HTTP_PORT = 8000
+var MAX_CLIENTS = 20
 
 var RECORD_FILE = 'session.rec'
 
@@ -67,6 +68,13 @@ logger.info ('web server started on port: ' + HTTP_PORT)
 
 var currentId = 1
 var server = ws.createServer(function(conn) {
+
+    if (currentId > MAX_CLIENTS) {
+        logger.warn("Connection rejected, reached max: " + currentId);
+        conn.close()
+        return
+    }
+
     var connectionId = currentId++;
     logger.debug("new connection, assigned id: " + connectionId)
     conn.on("text", function (str) {
