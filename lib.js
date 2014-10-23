@@ -37,3 +37,30 @@ var findClosestIP = function(ip) {
 }
 exports.findClosestIP = findClosestIP
 
+var expiringArray = function() {
+    var arr = [];
+    var EXPIRY_TIME = 1000;
+
+    var add = function(index, value) {
+        arr[index] = { timestamp: new Date().getTime(), value: value }
+    }
+
+    var sum = function(index, value) {
+        var total = 0
+        var now = new Date().getTime()
+        arr.forEach(function(el, index) {
+            if (!el) return
+            if (now - el.timestamp > EXPIRY_TIME) {
+                arr[index] = null
+                return
+            } 
+            total += el.value
+        })
+        return total
+    }
+
+    return { add: add, sum: sum, data: arr }
+}
+exports.expiringArray = expiringArray
+
+

@@ -19,7 +19,7 @@ var RECORD_FILE = 'session.rec'
 var logger = new (winston.Logger)({
     transports: [
         new (winston.transports.Console)({ 
-            level: 'info',
+            level: 'debug',
             timestamp: true, 
             colorize: true 
         }),
@@ -30,8 +30,27 @@ var parseNumbers = function(arr) {
     return _.map(arr, function(el) { return isNaN(el) ? el : +el })
 }
 
+var movements = lib.expiringArray()
+
 var client = new osc.Client(OSC_HOST, OSC_PORT)
 logger.info('sending OSC data to ' + OSC_HOST + ' on port: ' + OSC_PORT)
+
+var sendToMax = function(connectionId, payload) {
+    payload = parseNumbers(payload)
+    var movement = payload[4]
+    movements.add(connectionId, movement)
+
+    payload.unshift("/" + connectionId)
+    client.send.apply(client, payload)
+}
+
+setInterval(function() {
+    var mood = movements.sum()
+    logger.debug('sending global mood: ' + mood);
+    client.send('/0', mood)
+}, 100)
+
+// express stuff
 
 var app = express()
 app.use(express.static('static'))
@@ -52,10 +71,7 @@ var server = ws.createServer(function(conn) {
     logger.debug("new connection, assigned id: " + connectionId)
     conn.on("text", function (str) {
         logger.debug("connection #" + connectionId + " received: " + str)
-        split = str.split("|")
-        var payload = parseNumbers(split)
-        payload.unshift("/" + connectionId)
-        client.send.apply(client, payload)
+        payload = str.split("|")
 
         if (record) {
             var line = payload.join("|") + require('os').EOL
@@ -63,6 +79,8 @@ var server = ws.createServer(function(conn) {
                 if (err) throw err
             })
         }
+
+        sendToMax(connectionId, payload)
     })
     conn.on("close", function(code, reason) {
         logger.debug('connection #' + connectionId +' closed')
@@ -82,6 +100,7 @@ _.each(lib.getIPList(), function(ip) {
 
 
 // simulator stuff
+
 var simulators = []
 var record = false
 
@@ -100,11 +119,8 @@ process.stdin.on('keypress', function (ch, key) {
         var timer = setInterval(function() {
             var line = recording[lineCounter++]
             var payload = line.split('|')
-            payload[0] = "/" + simulatorId
-            payload[1] = color
-            payload = parseNumbers(payload)
-
-            client.send.apply(client, payload)
+            payload[0] = color
+            sendToMax(simulatorId, payload)
             logger.debug('simulator #' + simulatorId + ' sending: ' + payload)
 
             if (lineCounter == recording.length) lineCounter = 0
