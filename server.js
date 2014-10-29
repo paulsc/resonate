@@ -12,8 +12,8 @@ var lazy = require('lazy')
 var OSC_PORT = 4711
 var OSC_HOST = 'localhost'
 var WEBSOCKET_PORT = 8001
-var HTTP_PORT = 8000
-var MAX_CLIENTS = 20
+var HTTP_PORT = 80
+var MAX_CLIENTS = 12
 
 var RECORD_FILE = 'session.rec'
 
