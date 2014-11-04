@@ -22,7 +22,15 @@ body {
     var color = Math.random();
     var color255 = Math.round(color * 255);
 
-    function getBPM(input) {
+    var MAX_RECORDING_LENGTH = 50;
+    var MIN_BPM = 70;
+    var MAX_BPM = 180;
+    var MIN_SENSITIVITY = 80;
+    var TOLERANCE = 0.80; // 20% tolerance to find value
+    var MIN_SPREAD = 5;
+    var bpmTarget = 120;
+
+    function getBPM(input, samplingInterval) {
 
         if (input.length < 2) return { values: [], bpm: 0 };
 
@@ -36,6 +44,9 @@ body {
 
         if (!valueAboveOne) return { values: [], bpm: 0 };
 
+        var spread = _.max(input) - _.min(input);
+        if (spread < MIN_SPREAD) return { values: [], bpm: 0 };
+
         var autoCorrel = function(values, period) {
             var result = 0;
             for (var i = 0; i < values.length; i++) {
@@ -45,23 +56,59 @@ body {
         }
 
         var valuesWithIndex = [];
+        var max = -1;
         for (var i = 1; i < input.length / 2; i++) {
-            valuesWithIndex.push({ value: autoCorrel(input, i), index: i });
+            var correlValue = autoCorrel(input, i);
+            valuesWithIndex.push({ value: correlValue, index: i });
+            if (correlValue > max) max = correlValue;
         }
 
-        console.log(input)
-        console.log(valuesWithIndex)
-        var ordered = _.sortBy(valuesWithIndex, 
-                function(entry) { return entry.value });
+        var lowerThreshold = max * TOLERANCE;
+ 
+        var candidates = _.select(valuesWithIndex, function(item) {
+            return item.value > lowerThreshold;
+        });
+ 
+        var maxPeriod = 60 / MIN_BPM / samplingInterval;
+        var minPeriod = 60 / MAX_BPM / samplingInterval;
+        var candidatesInRange = _.select(candidates, function(item) {
+            return item.index > minPeriod && item.index < maxPeriod;
+        });
 
-        var topValues = ordered.slice(-5);
-        var selectedResult = _.min(topValues, function(entry) { 
-                return entry.index; 
-        })
+        var strongCandidates = _.select(candidatesInRange, function(item) {
+                return item.value > MIN_SENSITIVITY;
+        });
 
-        var max = selectedResult.index;
-        var bpm = 60 / (max * 0.05);
-        return { values: ordered, bpm: bpm };
+        if (strongCandidates.length == 0) {
+            return { values: candidates, bpm: '?' };
+        }
+ 
+        var selected = _.max(strongCandidates, function(item) {
+            return item.value;
+        });
+
+        // try to find pattern at double speed
+        var floor = Math.floor(selected.index / 2);
+        var ceil = Math.ceil(selected.index / 2);
+
+        var doubleSpeed;
+        _.each(strongCandidates, function(item) {
+            if (item.index == floor && item.value > (selected.value * 0.80)) {
+                doubleSpeed = item;
+            }
+            else if (item.index == ceil && item.value > (selected.value * 0.80)) {
+                doubleSpeed = item;
+            }
+        });
+
+        if (doubleSpeed) selected = doubleSpeed;
+
+        var bpm = Math.round(60 / (selected.index * samplingInterval));
+
+        var ordered = _.sortBy(valuesWithIndex, function(item) { return item.value });
+        var debug = ordered.slice(ordered.length-5, ordered.length);
+ 
+        return { values: ordered, bpm: bpm, strength: selected.value };
     }
 
     function HSVtoRGB(h, s, v) {
@@ -92,21 +139,6 @@ body {
     var aggregatedMovement = 0;
     var sampleCount = 0;
 
-    function processAccell() {
-        if (sampleCount == 0) return;
-        var averagedAccel = Math.round(aggregatedMovement / sampleCount);
-
-        document.getElementById("accel").innerHTML = averagedAccel;
-        document.getElementById("sample-count").innerHTML = sampleCount;
-
-        aggregatedMovement = 0;
-        sampleCount = 0;
-
-        if (socket && socket.readyState == 1) {
-            socket.send(color255 + "|" + averagedAccel);
-        }  
-    }
-
     function socketOpened() {
         document.getElementById("log").innerHTML = 'connected.';
     }
@@ -122,11 +154,6 @@ body {
         document.body.style.backgroundColor = "rgb(" + bg.r + ", " + bg.g + ", " + bg.b + ")";
 
         var recording = new Array();
-        var MAX_RECORDING_LENGTH = 100;
-
-        setTimeout(function() {
-            //window.removeEventListener('devicemotion', deviceMotionHandler);
-        }, 10000);
 
         var deviceMotionHandler = function(event) {
             var summed = 0;
@@ -134,28 +161,100 @@ body {
             summed += Math.abs(event.acceleration.y);
             summed += Math.abs(event.acceleration.z);
 
+            recording.push(summed);
+            if (recording.length > MAX_RECORDING_LENGTH) recording.shift();
+
+            var result = getBPM(recording, event.interval);
+
+            /*if (result.bpm < 100 && result.bpm > 10) {
+                window.removeEventListener('devicemotion', deviceMotionHandler);
+            }*/
+
+            if (result.bpm == '?') return;
+
+            document.getElementById("accel").innerHTML = 'n2BPM: ' + result.bpm + '<br/>';
+            /*_.each(result.values, function(item) {
+                document.getElementById("accel").innerHTML += 
+                    Math.round(item.value) + ' ' + item.index + '<br/>';
+            });*/
+
             if (socket && socket.readyState == 1) {
-                socket.send(color255 + "|" + summed);
+                socket.send(color255 + "|" + summed + "|" + result.bpm);
+                /*
+                var limited = result.values.slice(result.values.length-20, result.values.length);
+                var debugString = _.map(limited, function(item) {
+                    return Math.round(item.value) + ":" + item.index;
+                 });
+                socket.send(result.bpm + " | " + debugString.join(" "));
+                */
+
+                //socket.send(Math.round(summed * 10) / 10 + " " + result.bpm + " " + Math.round(result.strength));
+            }
+        }
+
+        var recordingAlpha = new Array();
+        var recordingBeta = new Array();
+        var recordingGamma = new Array();
+    
+        var previousEventTime = 0;
+        var intervals = new Array();
+
+        var deviceOrientationHandler = function(event) {
+            // alpha: (0, 360) phone flat on table turn like compass
+            // beta: (-90, 90) phone flat on table -> 0, move camera up to reach +90
+            // gamma: (-180, 180) phone flat on table = 0, face down is 180 and -180
+            alpha = Math.round(event.alpha);
+            recordingAlpha.push(alpha);
+            if (recordingAlpha.length > MAX_RECORDING_LENGTH) recordingAlpha.shift();
+
+            beta = Math.round(event.beta);
+            recordingBeta.push(beta);
+            if (recordingBeta.length > MAX_RECORDING_LENGTH) recordingBeta.shift();
+
+            gamma = Math.round(event.gamma);
+            recordingGamma.push(gamma);
+            if (recordingGamma.length > MAX_RECORDING_LENGTH) recordingGamma.shift();
+
+            var now = new Date().getTime();
+
+            if (previousEventTime == 0) {
+                previousEventTime = now;
+                return;
             }
 
-            recording.push(summed)
-            if (recording.length > MAX_RECORDING_LENGTH) recording.shift()
+            var interval = now - previousEventTime; 
+            previousEventTime = now;
+            intervals.push(interval);
+            if (intervals.length > MAX_RECORDING_LENGTH) intervals.shift();
 
-            var result = getBPM(recording);
-            var bpm = result.bpm;
-            var values = result.values;
+            var intervalSum = intervals.reduce(function(a, b) { return a + b; });
+            var intervalAvg = intervalSum / intervals.length / 1000;
 
-            if (bpm == 0 || bpm < 30 || bpm > 240) bpm = '-';
-            else bpm = Math.round(bpm);
+            var bpmAlpha = getBPM(recordingAlpha, intervalAvg).bpm;
+            var bpmBeta = getBPM(recordingBeta, intervalAvg).bpm;
+            var bpmGamma = getBPM(recordingGamma, intervalAvg).bpm;
 
-            document.getElementById("accel").innerHTML = 'BPM: ' + bpm;
+            document.getElementById("log-b").innerHTML = 
+                "<br/>orientation<br/>" + bpmAlpha + "-" + alpha + "<br/>" + 
+                bpmBeta + '-' + beta + "<br/>" + bpmGamma + '-' + gamma;
+        };
 
-            document.getElementById("sample-count").innerHTML = recording.length;
+        if (window.DeviceOrientationEvent) {
+            //window.addEventListener("deviceorientation", deviceOrientationHandler, true);
         }
 
         window.addEventListener('devicemotion', deviceMotionHandler);
         var on = true;
         document.addEventListener('touchstart', function(e) {
+            /*
+            if (socket && socket.readyState == 1) {
+                socket.send(recordingBeta);
+            }
+
+            document.getElementById("log-c").innerHTML = "SENT";
+            window.removeEventListener("deviceorientation", deviceOrientationHandler, true);
+            return;
+
             if (on) {
                 window.removeEventListener('devicemotion', deviceMotionHandler);
                 on = false;
@@ -164,9 +263,8 @@ body {
                 window.addEventListener('devicemotion', deviceMotionHandler);
                 on = true;
             }
+            */
         }, false);
-
-        //setInterval(processAccell, 20);
 
         socket = new WebSocket('<%= websocket_url %>');
         socket.onopen = socketOpened;
@@ -183,6 +281,8 @@ body {
     <div id="accel-x"></div>
     <div id="sample-count"></div>
     <div id="accel"></div>
+    <div id="log-b"></div>
+    <div id="log-c"></div>
 
 </body>
 </html>

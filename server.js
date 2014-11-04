@@ -20,7 +20,7 @@ var RECORD_FILE = 'session.rec'
 var logger = new (winston.Logger)({
     transports: [
         new (winston.transports.Console)({ 
-            level: 'info',
+            level: 'debug',
             timestamp: true, 
             colorize: true 
         }),
@@ -49,7 +49,7 @@ var sendToMax = function(connectionId, payload) {
 
 setInterval(function() {
     var mood = movements.sum()
-    logger.debug('sending global mood: ' + mood);
+    //logger.debug('sending global mood: ' + mood);
     client.send('/0', mood)
 }, 50)
 
@@ -68,6 +68,11 @@ app.get('/', function(req, res) {
     logger.info('got index request from: ' + req.ip)
     var url = util.format('ws://%s:%s/', lib.findClosestIP(req.ip), WEBSOCKET_PORT)
     res.render('index.ejs', { websocket_url: url})
+})
+app.get('/bpm', function(req, res) {
+    logger.info('got bpm request from: ' + req.ip)
+    var url = util.format('ws://%s:%s/', lib.findClosestIP(req.ip), WEBSOCKET_PORT)
+    res.render('index-bpm.ejs', { websocket_url: url})
 })
 app.listen(HTTP_PORT)
 logger.info ('web server started on port: ' + HTTP_PORT)
