@@ -2,7 +2,7 @@
 	"name" : "cubes",
 	"version" : 1,
 	"creationdate" : -799604632,
-	"modificationdate" : -798033859,
+	"modificationdate" : -1233808041,
 	"viewrect" : [ 25.0, 69.0, 301.0, 299.0 ],
 	"autoorganize" : 1,
 	"hideprojectwindow" : 0,
@@ -31,6 +31,11 @@
 ,
 			"mov-avg.js" : 			{
 				"kind" : "javascript",
+				"local" : 1
+			}
+,
+			"mat.dirperpixel.jxs" : 			{
+				"kind" : "shader",
 				"local" : 1
 			}
 
