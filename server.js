@@ -12,15 +12,15 @@ var lazy = require('lazy')
 var OSC_PORT = 4711
 var OSC_HOST = 'localhost'
 var WEBSOCKET_PORT = 8001
-var HTTP_PORT = 8000
-var MAX_CLIENTS = 20
+var HTTP_PORT = 80
+var MAX_CLIENTS = 12
 
 var RECORD_FILE = 'session.rec'
 
 var logger = new (winston.Logger)({
     transports: [
         new (winston.transports.Console)({ 
-            level: 'info',
+            level: 'debug',
             timestamp: true, 
             colorize: true 
         }),
@@ -30,6 +30,8 @@ var logger = new (winston.Logger)({
 var parseNumbers = function(arr) {
     return _.map(arr, function(el) { return isNaN(el) ? el : +el })
 }
+
+// OSC Stuff
 
 var movements = lib.expiringArray()
 
@@ -47,9 +49,16 @@ var sendToMax = function(connectionId, payload) {
 
 setInterval(function() {
     var mood = movements.sum()
-    logger.debug('sending global mood: ' + mood);
+    //logger.debug('sending global mood: ' + mood);
     client.send('/0', mood)
 }, 50)
+
+var oscServer = new osc.Server(4712, '127.0.0.1')
+oscServer.on("message", function(msg, rinfo) {
+    if (msg[0] == '/addsim') {
+        addSimulator()
+    }
+});
 
 // express stuff
 
@@ -59,6 +68,11 @@ app.get('/', function(req, res) {
     logger.info('got index request from: ' + req.ip)
     var url = util.format('ws://%s:%s/', lib.findClosestIP(req.ip), WEBSOCKET_PORT)
     res.render('index.ejs', { websocket_url: url})
+})
+app.get('/bpm', function(req, res) {
+    logger.info('got bpm request from: ' + req.ip)
+    var url = util.format('ws://%s:%s/', lib.findClosestIP(req.ip), WEBSOCKET_PORT)
+    res.render('index-bpm.ejs', { websocket_url: url})
 })
 app.listen(HTTP_PORT)
 logger.info ('web server started on port: ' + HTTP_PORT)
@@ -112,6 +126,34 @@ _.each(lib.getIPList(), function(ip) {
 var simulators = []
 var record = false
 
+var addSimulator = function() {
+    var recording = fs.readFileSync(RECORD_FILE).toString().split("\n")
+    var lineCounter = 0
+    var simulatorId = currentId++
+    logger.info('added simulator #' + simulatorId)
+    var color = Math.round(Math.random() * 255)
+    var timer = setInterval(function() {
+        var line = recording[lineCounter++]
+        var payload = line.split('|')
+        payload[0] = color
+        sendToMax(simulatorId, payload)
+        logger.debug('simulator #' + simulatorId + ' sending: ' + payload)
+
+        if (lineCounter == recording.length - 1) lineCounter = 0
+    }, 50)
+    simulators.push(timer)
+}
+
+var removeSimulator = function() {
+    if (simulators.length == 0) {
+        logger.info('no running simulators')
+        return
+    }
+    logger.info('removing simulator #' + simulators.length)
+    var timer = simulators.pop()
+    clearInterval(timer)
+}
+
 keypress(process.stdin);
 process.stdin.on('keypress', function (ch, key) {
     if (key && key.ctrl && key.name == 'c') {
@@ -119,26 +161,10 @@ process.stdin.on('keypress', function (ch, key) {
         process.exit()
     }
     else if (key && key.name == 'space') {
-        var recording = fs.readFileSync(RECORD_FILE).toString().split("\n")
-        var lineCounter = 0
-        var simulatorId = currentId++
-        logger.info('added simulator #' + simulatorId)
-        var color = Math.round(Math.random() * 255)
-        var timer = setInterval(function() {
-            var line = recording[lineCounter++]
-            var payload = line.split('|')
-            payload[0] = color
-            sendToMax(simulatorId, payload)
-            logger.debug('simulator #' + simulatorId + ' sending: ' + payload)
-
-            if (lineCounter == recording.length - 1) lineCounter = 0
-        }, 50)
-        simulators.push(timer)
+        addSimulator()
     }
     else if (key && key.name == 'backspace') {
-        logger.info('removing simulator')
-        var timer = simulators.pop()
-        clearInterval(timer)
+        removeSimulator()
     }
     else if (key && key.ctrl && key.name == 'r') {
         if (record) {
