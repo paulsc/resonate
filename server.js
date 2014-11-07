@@ -20,7 +20,7 @@ var RECORD_FILE = 'session.rec'
 var logger = new (winston.Logger)({
     transports: [
         new (winston.transports.Console)({ 
-            level: 'debug',
+            level: 'info',
             timestamp: true, 
             colorize: true 
         }),

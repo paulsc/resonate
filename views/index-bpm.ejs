@@ -8,6 +8,99 @@ body {
     font-size: 100px;
     font-weight: bold;
 }
+
+.blink {
+  -moz-animation-duration: 500ms;
+  -moz-animation-name: blink;
+  -moz-animation-iteration-count: infinite;
+  -moz-animation-direction: alternate;
+  
+  -webkit-animation-duration: 500ms;
+  -webkit-animation-name: blink;
+  -webkit-animation-iteration-count: infinite;
+  -webkit-animation-direction: alternate;
+  
+  animation-duration: 500ms;
+  animation-name: blink;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+@-moz-keyframes blink {
+  0% {
+    opacity: 0;
+    color: pink;
+  }
+
+  49.99% {
+    opacity: 0;
+    color: green;
+  }
+  50% {
+    opacity: 1;
+    color: blue;
+  }
+
+  99.99% {
+    opacity: 1;
+    color: orange;
+  }
+  100% {
+    opacity: 0;
+    color: pink;
+  }
+}
+
+@-webkit-keyframes blink {
+  0% {
+    opacity: 0;
+    color: pink;
+  }
+
+  49.99% {
+    opacity: 0;
+    color: green;
+  }
+  50% {
+    opacity: 1;
+    color: blue;
+  }
+
+  99.99% {
+    opacity: 1;
+    color: orange;
+  }
+  100% {
+    opacity: 0;
+    color: pink;
+  }
+}
+
+@keyframes blink {
+  0% {
+    opacity: 0;
+    color: pink;
+  }
+
+  49.99% {
+    opacity: 0;
+    color: green;
+  }
+  50% {
+    opacity: 1;
+    color: blue;
+  }
+
+  99.99% {
+    opacity: 1;
+    color: orange;
+  }
+  100% {
+    opacity: 0;
+    color: pink;
+  }
+}
+
 </style>
 
 <script type="text/javascript" src="/underscore.js"></script>
@@ -111,6 +204,13 @@ body {
         return { values: ordered, bpm: bpm, strength: selected.value };
     }
 
+    function getInSyncRange(bpm, samplingInterval) {
+        var intvl = 60 / bpm / samplingInterval;
+        var upperBound = Math.round(60 / ((intvl - 1) * samplingInterval));
+        var lowerBound = Math.round(60 / ((intvl + 1) * samplingInterval));
+        return [ lowerBound, upperBound ];
+    }
+
     function HSVtoRGB(h, s, v) {
         var r, g, b, i, f, p, q, t;
         if (h && s === undefined && v === undefined) {
@@ -155,6 +255,18 @@ body {
 
         var recording = new Array();
 
+        var inSyncCounter = 0;
+        var decreaseBy = 1;
+
+        var CORNY_PHRASES = [
+            "SHAKE YA GROOVE THANG!!",
+            "UUUUUUH YEAAAAA!!",
+            "PUMP IT UP!!!!",
+            "UNTZ UNTZ!!",
+            "AAAAWWWW SHIIIIIIT!!"
+        ];
+        var corny_phrase = CORNY_PHRASES[Math.floor(Math.random() * CORNY_PHRASES.length)];
+
         var deviceMotionHandler = function(event) {
             var summed = 0;
             summed += Math.abs(event.acceleration.x);
@@ -166,81 +278,37 @@ body {
 
             var result = getBPM(recording, event.interval);
 
-            /*if (result.bpm < 100 && result.bpm > 10) {
-                window.removeEventListener('devicemotion', deviceMotionHandler);
-            }*/
-
             if (result.bpm == '?') return;
+            
+            var syncRange = getInSyncRange(bpmTarget, event.interval);
+            if (result.bpm >= syncRange[0] && result.bpm <= syncRange[1]) {
+                decreaseBy = 1;
+                inSyncCounter++;
+                if (inSyncCounter > 20) {
+                    document.getElementById("party").innerHTML = corny_phrase;
+               }
+            }
+            else {
+                document.getElementById("party").innerHTML = "";
+                //document.getElementById("log-b").innerHTML = "";
+                if (inSyncCounter > 0) { 
+                    inSyncCounter = Math.round(inSyncCounter - decreaseBy);
+                    decreaseBy += 0.25;
+                    if (inSyncCounter < 0) inSyncCounter = 0;
+                }
+            }
+            document.getElementById("log-b").innerHTML =  
+                "<br/><br/>MOVIN' " + inSyncCounter;
 
-            document.getElementById("accel").innerHTML = 'n2BPM: ' + result.bpm + '<br/>';
-            /*_.each(result.values, function(item) {
-                document.getElementById("accel").innerHTML += 
-                    Math.round(item.value) + ' ' + item.index + '<br/>';
-            });*/
+            document.getElementById("accel").innerHTML = 'YOUR BPM: ' 
+                + result.bpm + '<br/><br/>';
 
+
+            var syncToSend = inSyncCounter > 20 ? inSyncCounter : 0;
             if (socket && socket.readyState == 1) {
-                socket.send(color255 + "|" + summed + "|" + result.bpm);
-                /*
-                var limited = result.values.slice(result.values.length-20, result.values.length);
-                var debugString = _.map(limited, function(item) {
-                    return Math.round(item.value) + ":" + item.index;
-                 });
-                socket.send(result.bpm + " | " + debugString.join(" "));
-                */
-
-                //socket.send(Math.round(summed * 10) / 10 + " " + result.bpm + " " + Math.round(result.strength));
+                socket.send(color255 + "|" + Math.round(summed) 
+                        + "|" + result.bpm + "|" + syncToSend);
             }
-        }
-
-        var recordingAlpha = new Array();
-        var recordingBeta = new Array();
-        var recordingGamma = new Array();
-    
-        var previousEventTime = 0;
-        var intervals = new Array();
-
-        var deviceOrientationHandler = function(event) {
-            // alpha: (0, 360) phone flat on table turn like compass
-            // beta: (-90, 90) phone flat on table -> 0, move camera up to reach +90
-            // gamma: (-180, 180) phone flat on table = 0, face down is 180 and -180
-            alpha = Math.round(event.alpha);
-            recordingAlpha.push(alpha);
-            if (recordingAlpha.length > MAX_RECORDING_LENGTH) recordingAlpha.shift();
-
-            beta = Math.round(event.beta);
-            recordingBeta.push(beta);
-            if (recordingBeta.length > MAX_RECORDING_LENGTH) recordingBeta.shift();
-
-            gamma = Math.round(event.gamma);
-            recordingGamma.push(gamma);
-            if (recordingGamma.length > MAX_RECORDING_LENGTH) recordingGamma.shift();
-
-            var now = new Date().getTime();
-
-            if (previousEventTime == 0) {
-                previousEventTime = now;
-                return;
-            }
-
-            var interval = now - previousEventTime; 
-            previousEventTime = now;
-            intervals.push(interval);
-            if (intervals.length > MAX_RECORDING_LENGTH) intervals.shift();
-
-            var intervalSum = intervals.reduce(function(a, b) { return a + b; });
-            var intervalAvg = intervalSum / intervals.length / 1000;
-
-            var bpmAlpha = getBPM(recordingAlpha, intervalAvg).bpm;
-            var bpmBeta = getBPM(recordingBeta, intervalAvg).bpm;
-            var bpmGamma = getBPM(recordingGamma, intervalAvg).bpm;
-
-            document.getElementById("log-b").innerHTML = 
-                "<br/>orientation<br/>" + bpmAlpha + "-" + alpha + "<br/>" + 
-                bpmBeta + '-' + beta + "<br/>" + bpmGamma + '-' + gamma;
-        };
-
-        if (window.DeviceOrientationEvent) {
-            //window.addEventListener("deviceorientation", deviceOrientationHandler, true);
         }
 
         window.addEventListener('devicemotion', deviceMotionHandler);
@@ -281,6 +349,7 @@ body {
     <div id="accel-x"></div>
     <div id="sample-count"></div>
     <div id="accel"></div>
+    <div class="blink" id="party"></div>
     <div id="log-b"></div>
     <div id="log-c"></div>
 
