@@ -40,7 +40,7 @@ logger.info('sending OSC data to ' + OSC_HOST + ' on port: ' + OSC_PORT)
 
 var sendToMax = function(connectionId, payload) {
     payload = parseNumbers(payload)
-    var movement = payload[4]
+    var movement = payload[1]
     movements.add(connectionId, movement)
 
     payload.unshift("/" + connectionId)
