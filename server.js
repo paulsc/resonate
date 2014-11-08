@@ -69,11 +69,6 @@ app.get('/', function(req, res) {
     var url = util.format('ws://%s:%s/', lib.findClosestIP(req.ip), WEBSOCKET_PORT)
     res.render('index.ejs', { websocket_url: url})
 })
-app.get('/bpm', function(req, res) {
-    logger.info('got bpm request from: ' + req.ip)
-    var url = util.format('ws://%s:%s/', lib.findClosestIP(req.ip), WEBSOCKET_PORT)
-    res.render('index-bpm.ejs', { websocket_url: url})
-})
 app.listen(HTTP_PORT)
 logger.info ('web server started on port: ' + HTTP_PORT)
 

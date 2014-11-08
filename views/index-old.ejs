@@ -1,0 +1,136 @@
+<html>
+<head>
+<title> Tracker </title>
+
+<style>
+body { 
+    font-family: "Arial"; 
+    font-size: 100px;
+    font-weight: bold;
+}
+</style>
+
+<script type="text/javascript" src="/underscore.js"></script>
+
+<!--
+<script src="//ajax.googleapis.com/ajax/libs/jquerymobile/1.4.3/jquery.mobile.min.js"></script>
+-->
+
+<script type="text/javascript">
+
+    var socket;
+    var color = Math.random();
+    var color255 = Math.round(color * 255);
+
+    function HSVtoRGB(h, s, v) {
+        var r, g, b, i, f, p, q, t;
+        if (h && s === undefined && v === undefined) {
+            s = h.s, v = h.v, h = h.h;
+        }
+        i = Math.floor(h * 6);
+        f = h * 6 - i;
+        p = v * (1 - s);
+        q = v * (1 - f * s);
+        t = v * (1 - (1 - f) * s);
+        switch (i % 6) {
+            case 0: r = v, g = t, b = p; break;
+            case 1: r = q, g = v, b = p; break;
+            case 2: r = p, g = v, b = t; break;
+            case 3: r = p, g = q, b = v; break;
+            case 4: r = t, g = p, b = v; break;
+            case 5: r = v, g = p, b = q; break;
+        }
+        return {
+           r: Math.floor(r * 255),
+           g: Math.floor(g * 255),
+           b: Math.floor(b * 255)
+        };
+    }
+
+    function socketOpened() {
+        document.getElementById("log").innerHTML = 'connected.';
+    }
+
+    function socketClosed() {
+        document.getElementById("log").innerHTML = 'disconnected.';  
+    }
+
+    function average(arr) {
+        var sum = 0;
+        for (i = 0; i < arr.length; i++) {
+            sum += arr[i];
+        }
+        return sum / arr.length;
+    }
+
+    function onload() {
+
+        var bg = HSVtoRGB(color, 1, 1);
+        document.body.style.backgroundColor = "rgb(" + bg.r + ", " + bg.g + ", " + bg.b + ")";
+
+        var summedMotion = 0;
+        var historicalMotion = [];
+        var MOVING_AVERAGE_POINTS = 1;
+        var dampedMotion = 0;
+
+        var deviceMotionHandler = function(event) {
+            var newSummedMotion = 0;
+            newSummedMotion += Math.abs(event.acceleration.x);
+            newSummedMotion += Math.abs(event.acceleration.y);
+            newSummedMotion += Math.abs(event.acceleration.z);
+            summedMotion = Math.round(newSummedMotion);
+
+            historicalMotion.push(summedMotion);
+            if (historicalMotion.length > MOVING_AVERAGE_POINTS) {
+                historicalMotion.shift();
+            }
+            dampedMotion = Math.round(average(historicalMotion));
+
+            document.getElementById("log-c").innerHTML = 
+                "<br/>dmotion(" + MOVING_AVERAGE_POINTS + ")<br/>" + dampedMotion;
+        }
+        window.addEventListener('devicemotion', deviceMotionHandler);
+
+        var alpha, beta, gamma;
+        var deviceOrientationHandler = function(event) {
+            // alpha: (0, 360) phone flat on table turn like compass
+            // beta: (-90, 90) phone flat on table -> 0, move camera up to reach +90
+            // gamma: (-180, 180) phone flat on table = 0, face down is 180 and -180
+            alpha = Math.round(event.alpha);
+            beta = Math.round(event.beta);
+            gamma = Math.round(event.gamma);
+            document.getElementById("log-b").innerHTML = 
+                "<br/>orientation<br/>" + alpha + "<br/>" + beta + "<br/>" + gamma;
+        };
+
+        if (window.DeviceOrientationEvent) {
+            window.addEventListener("deviceorientation", deviceOrientationHandler, true);
+        }
+
+        var send = function() {
+            if (socket && socket.readyState == 1) {
+                socket.send(color255 + "|" + alpha + "|" + beta 
+                        + "|" + gamma + "|" + dampedMotion);
+            }
+        }
+
+        setInterval(send, 100);
+
+        socket = new WebSocket('<%= websocket_url %>');
+        socket.onopen = socketOpened;
+        socket.onclose = socketClosed;
+    };
+
+</script>
+
+</head>
+
+<body onload="onload()">
+
+    <div id="log"></div>
+    <div id="log-b"></div>
+    <div id="log-c"></div>
+
+</body>
+</html>
+
