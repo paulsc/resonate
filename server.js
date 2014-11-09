@@ -51,7 +51,7 @@ setInterval(function() {
     var mood = movements.sum()
     //logger.debug('sending global mood: ' + mood);
     client.send('/0', mood)
-}, 50)
+}, 250)
 
 var oscServer = new osc.Server(4712, '127.0.0.1')
 oscServer.on("message", function(msg, rinfo) {
