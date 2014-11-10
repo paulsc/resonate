@@ -13,7 +13,6 @@ var OSC_PORT = 4711
 var OSC_HOST = 'localhost'
 var WEBSOCKET_PORT = 8001
 var HTTP_PORT = 80
-var MAX_CLIENTS = 12
 
 var RECORD_FILE = 'session.rec'
 
@@ -50,7 +49,7 @@ var sendToMax = function(connectionId, payload) {
 setInterval(function() {
     var mood = movements.sum()
     //logger.debug('sending global mood: ' + mood);
-    client.send('/0', mood)
+    client.send('/server', mood)
 }, 250)
 
 var oscServer = new osc.Server(4712, '127.0.0.1')
@@ -72,20 +71,31 @@ app.get('/', function(req, res) {
 app.listen(HTTP_PORT)
 logger.info ('web server started on port: ' + HTTP_PORT)
 
+function takeFirstEmptySlot(array, itemToAdd) {
+    var itemId = -1
+    array.forEach(function(item, index) {
+        if (item == null) itemId = index
+    })
+
+    if (itemId > 0) {
+        array[itemId] = itemToAdd
+    }
+    else {
+        itemId = array.length
+        array.push(itemToAdd)
+    }
+    return itemId
+}
 
 // websocket stuff
 
-var currentId = 1
+var connections = []
+
 var server = ws.createServer(function(conn) {
 
-    if (currentId > MAX_CLIENTS) {
-        logger.warn("Connection rejected, reached max: " + currentId);
-        conn.close()
-        return
-    }
+    var connectionId = takeFirstEmptySlot(connections, conn)
 
-    var connectionId = currentId++;
-    logger.debug("new connection, assigned id: " + connectionId)
+    logger.info("new connection, assigned id: " + connectionId)
     conn.on("text", function (str) {
         logger.debug("connection #" + connectionId + " received: " + str)
         payload = str.split("|")
@@ -100,10 +110,11 @@ var server = ws.createServer(function(conn) {
         sendToMax(connectionId, payload)
     })
     conn.on("close", function(code, reason) {
-        logger.debug('connection #' + connectionId +' closed')
+        logger.info('connection #' + connectionId +' closed')
+        connections[connectionId] = null
     })
     conn.on("error", function(error) {
-        logger.debug('connection #' + connectionId + ' error: ' + error.code)
+        logger.info('connection #' + connectionId + ' error: ' + error.code)
     })
 }).listen(WEBSOCKET_PORT)
 
@@ -118,14 +129,13 @@ _.each(lib.getIPList(), function(ip) {
 
 // simulator stuff
 
-var simulators = []
 var record = false
 
 var addSimulator = function() {
     var recording = fs.readFileSync(RECORD_FILE).toString().split("\n")
     var lineCounter = 0
-    var simulatorId = currentId++
-    logger.info('added simulator #' + simulatorId)
+    var simulatorId = takeFirstEmptySlot(connections, {}) 
+    logger.info('adding simulator in slot #' + simulatorId)
     var color = Math.round(Math.random() * 255)
     var timer = setInterval(function() {
         var line = recording[lineCounter++]
@@ -136,17 +146,23 @@ var addSimulator = function() {
 
         if (lineCounter == recording.length - 1) lineCounter = 0
     }, 50)
-    simulators.push(timer)
+    connections[simulatorId] = timer
 }
 
 var removeSimulator = function() {
-    if (simulators.length == 0) {
+
+    var lastSimulatorIndex = -1
+    connections.forEach(function(item, index) {
+        if (item && item._idleStart) lastSimulatorIndex = index
+    })
+
+    if (lastSimulatorIndex < 0) {
         logger.info('no running simulators')
         return
     }
-    logger.info('removing simulator #' + simulators.length)
-    var timer = simulators.pop()
-    clearInterval(timer)
+    logger.info('removing simulator at slot #' + lastSimulatorIndex)
+    clearInterval(connections[lastSimulatorIndex])
+    connections[lastSimulatorIndex] = null
 }
 
 keypress(process.stdin);
