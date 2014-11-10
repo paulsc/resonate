@@ -49,7 +49,7 @@ var sendToMax = function(connectionId, payload) {
 setInterval(function() {
     var mood = movements.sum()
     //logger.debug('sending global mood: ' + mood);
-    client.send('/server', mood)
+    client.send('/server', mood, connections.length)
 }, 250)
 
 var oscServer = new osc.Server(4712, '127.0.0.1')
