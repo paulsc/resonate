@@ -14,7 +14,7 @@ var OSC_HOST = 'localhost'
 var WEBSOCKET_PORT = 8001
 var HTTP_PORT = 80
 
-var RECORD_FILE = 'session.rec'
+var RECORD_FILE = 'session-small.rec'
 
 var logger = new (winston.Logger)({
     transports: [

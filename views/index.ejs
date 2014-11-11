@@ -278,7 +278,13 @@ body {
 
             var result = getBPM(recording, event.interval);
 
-            if (result.bpm == '?') return;
+            if (result.bpm == '?') {
+                if (socket && socket.readyState == 1) {
+                    socket.send(color255 + "|" + Math.round(summed) 
+                            + "|" + 0 + "|" + 0 );
+                }
+                return;
+            }
             
             var syncRange = getInSyncRange(bpmTarget, event.interval);
             if (result.bpm >= syncRange[0] && result.bpm <= syncRange[1]) {
