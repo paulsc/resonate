@@ -2,7 +2,7 @@
 	"name" : "cubes",
 	"version" : 1,
 	"creationdate" : -799604632,
-	"modificationdate" : -797164416,
+	"modificationdate" : -796583874,
 	"viewrect" : [ 25.0, 69.0, 301.0, 299.0 ],
 	"autoorganize" : 1,
 	"hideprojectwindow" : 0,
@@ -22,6 +22,11 @@
 			}
 ,
 			"torus.maxpat" : 			{
+				"kind" : "patcher",
+				"local" : 1
+			}
+,
+			"polyslice.maxpat" : 			{
 				"kind" : "patcher",
 				"local" : 1
 			}

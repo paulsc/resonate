@@ -77,7 +77,7 @@ function takeFirstEmptySlot(array, itemToAdd) {
         if (item == null) itemId = index
     })
 
-    if (itemId > 0) {
+    if (itemId >= 0) {
         array[itemId] = itemToAdd
     }
     else {
@@ -111,6 +111,7 @@ var server = ws.createServer(function(conn) {
     })
     conn.on("close", function(code, reason) {
         logger.info('connection #' + connectionId +' closed')
+        client.send('/disconnected', connectionId)
         connections[connectionId] = null
     })
     conn.on("error", function(error) {
@@ -145,7 +146,7 @@ var addSimulator = function() {
         logger.debug('simulator #' + simulatorId + ' sending: ' + payload)
 
         if (lineCounter == recording.length - 1) lineCounter = 0
-    }, 50)
+    }, 500)
     connections[simulatorId] = timer
 }
 
