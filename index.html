@@ -16,8 +16,6 @@
     var color = Math.random();
     var color255 = Math.round(color * 255);
 
-    var socket;
-
     function HSVtoRGB(h, s, v) {
         var r, g, b, i, f, p, q, t;
         if (h && s === undefined && v === undefined) {
@@ -43,75 +41,10 @@
         };
     }
 
-    var aggregatedMovement = 0;
-    var sampleCount = 0;
-
-    function processAccell() {
-        if (sampleCount == 0) return;
-        var averagedAccel = Math.round(aggregatedMovement / sampleCount);
-  
-        document.getElementById("accel").innerHTML = averagedAccel;
-        document.getElementById("sample-count").innerHTML = sampleCount;
-        
-        aggregatedMovement = 0;
-        sampleCount = 0;
-  
-        if (socket && socket.readyState == 1) {
-            socket.send(color255 + "|" + averagedAccel);
-        }  
-    }
-
-    function socketOpened() {
-        document.getElementById("log").innerHTML = 'connected.';
-    }
-
-    function socketClosed() {
-        document.getElementById("log").innerHTML = 'disconnected.';  
-    }
-
     function onload() {
-
         var bg = HSVtoRGB(color, 1, 1);
         document.body.style.backgroundColor = "rgb(" + bg.r + ", " + bg.g + ", " + bg.b + ")";
-  
-        window.addEventListener('devicemotion', function(event) {
-            aggregatedMovement = 0;
-            aggregatedMovement += Math.abs(event.acceleration.x);
-            aggregatedMovement += Math.abs(event.acceleration.y);
-            aggregatedMovement += Math.abs(event.acceleration.z);
-            sampleCount = sampleCount + 1;
-    
-            //document.getElementById("accel-x").innerHTML = event.acceleration.x; 
-            document.getElementById("accel-x").innerHTML = Math.round(aggregatedMovement); 
-    
-            /*
-            document.getElementById("accel-x").innerHTML = Math.round(event.acceleration.x); 
-            document.getElementById("accel-y").innerHTML = Math.round(event.acceleration.y);
-            document.getElementById("accel-z").innerHTML = Math.round(event.acceleration.z);
-            */
-        });
-  
-        if (window.DeviceOrientationEvent) {
-            window.addEventListener("deviceorientation", function () {
-                tilt([event.alpha, event.beta, event.gamma]);
-            }, true);
-        } else if (window.DeviceMotionEvent) {
-            window.addEventListener('devicemotion', function () {
-                tilt([0, event.acceleration.x * 2, event.acceleration.y * 2]);
-            }, true);
-        } else {
-            window.addEventListener("MozOrientation", function () {
-                tilt([0, orientation.x * 50, orientation.y * 50]);
-            }, true);
-        }
-
-        //setInterval(processAccell, 20);
-
-    //  socket = new WebSocket('ws://192.168.178.22:8887/');
-    //  socket.onopen = socketOpened;
-    //  socket.onclose = socketClosed;
-
-    };
+    }
 
 </script>
 
@@ -119,7 +52,7 @@
 
 <body onload="onload()">
 
-<div id="log"></div>
+<div id="log">RESONATE</div>
 <div id="accel-x"></div>
 <div id="sample-count"></div>
 <div id="accel"></div>
