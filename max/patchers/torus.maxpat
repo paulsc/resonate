@@ -8,7 +8,7 @@
 			"architecture" : "x86"
 		}
 ,
-		"rect" : [ 807.0, 115.0, 799.0, 771.0 ],
+		"rect" : [ 465.0, 65.0, 799.0, 771.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -28,6 +28,19 @@
 		"digest" : "",
 		"tags" : "",
 		"boxes" : [ 			{
+				"box" : 				{
+					"fontname" : "Arial",
+					"fontsize" : 12.0,
+					"id" : "obj-28",
+					"maxclass" : "jit.fpsgui",
+					"numinlets" : 1,
+					"numoutlets" : 2,
+					"outlettype" : [ "", "" ],
+					"patching_rect" : [ 583.0, 197.0, 80.0, 35.0 ]
+				}
+
+			}
+, 			{
 				"box" : 				{
 					"fontname" : "Arial",
 					"fontsize" : 12.0,
@@ -213,7 +226,8 @@
 									"numinlets" : 2,
 									"numoutlets" : 4,
 									"outlettype" : [ "list", "", "", "" ],
-									"patching_rect" : [ 158.0, 198.0, 670.0, 269.0 ]
+									"patching_rect" : [ 158.0, 198.0, 670.0, 269.0 ],
+									"rows" : 3
 								}
 
 							}
@@ -1060,7 +1074,6 @@
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
 									"patching_rect" : [ 162.0, 113.0, 69.0, 20.0 ],
-									"presentation_rect" : [ 177.0, 33.0, 0.0, 0.0 ],
 									"text" : "r bar-count"
 								}
 
@@ -1216,7 +1229,7 @@
 											"architecture" : "x86"
 										}
 ,
-										"rect" : [ 262.0, 273.0, 640.0, 480.0 ],
+										"rect" : [ 759.0, 200.0, 640.0, 480.0 ],
 										"bglocked" : 0,
 										"openinpresentation" : 0,
 										"default_fontsize" : 12.0,
@@ -1347,7 +1360,7 @@
 													"numoutlets" : 1,
 													"outlettype" : [ "" ],
 													"patching_rect" : [ 15.0, 180.0, 97.0, 19.0 ],
-													"text" : "springto 0 0 $1"
+													"text" : "springto $1 0 0"
 												}
 
 											}
@@ -5037,13 +5050,13 @@
 									"fontname" : "Arial",
 									"fontsize" : 12.0,
 									"id" : "obj-7",
-									"linecount" : 3,
+									"linecount" : 2,
 									"maxclass" : "message",
 									"numinlets" : 2,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
 									"patching_rect" : [ 342.0, 143.0, 50.0, 31.0 ],
-									"text" : "/1 245 0 171 0"
+									"text" : "/1 20 1 100 0"
 								}
 
 							}
@@ -7876,6 +7889,15 @@
 					"disabled" : 0,
 					"hidden" : 0,
 					"source" : [ "obj-51", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-28", 0 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"source" : [ "obj-53", 0 ]
 				}
 
 			}
