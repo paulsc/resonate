@@ -49,7 +49,10 @@ var sendToMax = function(connectionId, payload) {
 setInterval(function() {
     var mood = movements.sum()
     //logger.debug('sending global mood: ' + mood);
-    client.send('/server', mood, connections.length)
+    numberOfClients = 0
+    connections.forEach(function() { numberOfClients++ })
+
+    client.send('/0', mood, numberOfClients)
 }, 250)
 
 var oscServer = new osc.Server(4712, '127.0.0.1')
@@ -64,27 +67,22 @@ oscServer.on("message", function(msg, rinfo) {
 var app = express()
 app.use(express.static('static'))
 app.get('/', function(req, res) {
-    logger.info('got index request from: ' + req.ip)
-    var url = util.format('ws://%s:%s/', lib.findClosestIP(req.ip), WEBSOCKET_PORT)
+    ip = req.connection.remoteAddress
+    ip = ip.replace(/^.*:/, '')
+    logger.info('got index request from: ' + ip)
+    var url = util.format('ws://%s:%s/', lib.findClosestIP(ip), WEBSOCKET_PORT)
     res.render('index.ejs', { websocket_url: url})
 })
 app.listen(HTTP_PORT)
 logger.info ('web server started on port: ' + HTTP_PORT)
 
 function takeFirstEmptySlot(array, itemToAdd) {
-    var itemId = -1
-    array.forEach(function(item, index) {
-        if (item == null) itemId = index
-    })
-
-    if (itemId >= 0) {
-        array[itemId] = itemToAdd
+    var index = 1 // 0 is reserved for server messages
+    while (index in array) {
+        index++ 
     }
-    else {
-        itemId = array.length
-        array.push(itemToAdd)
-    }
-    return itemId
+    array[index] = itemToAdd
+    return index
 }
 
 // websocket stuff
